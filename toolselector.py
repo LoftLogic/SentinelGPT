@@ -11,6 +11,8 @@ def cosine_similarity(vec1, vec2) -> float:
 
 class ToolSelector:
     """
+    Manages a collection of tools to use.
+    
     Has the following responsibilities:
         - Use a user query to retireve a filtered list of relevant tools
         - Group relevant tools by their provider
@@ -18,6 +20,7 @@ class ToolSelector:
     
     def __init__(self):
         self.embedding: OpenAIEmbeddings = OpenAIEmbeddings()
+        # self.tools: dict[str, set[str]] = {} Not sure yet if this should be a returned value or a part of state
 
     
     def get_similarities(self, query: str, tools: list[RegisteredTool]) -> dict[str, float]:
@@ -32,6 +35,7 @@ class ToolSelector:
         returns:
             A dictionary mapping tool names to their similarity scores
         """
+        # NOTE: In the future, we may want to implement FAISS embedding
         result: dict[str, float] = {}
         query_embedding = self.embedding.embed_query(query)
                     

@@ -11,12 +11,7 @@ os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
 
 def main():
-    """
-    debug: bool = True
-    llm = OpenAI(temperature=0.0)
-    print(dir(llm))
-    run_interface(debug, llm)
-    """
+    run_interface(True)
     
 
 if __name__ == "__main__":

@@ -45,13 +45,14 @@ def generate_template() -> ChatPromptTemplate:
     }
     '''
     # Set up prompt template message for the hub planner
-    # NOTE: Need to talk to someone to get this planner to work
+    # NOTE: Need to talk to someone to get this planner to work, notably about app to app interactions which I (Li) don't really understand well yet
     template_str = ("""
         '# Prompt
         
         Objective:
         Your objective is to create a sequential workflow based on the users query.
-        Create a plan represented in JSON by only using the tools listed below. The workflow should be a JSON array containing only the tool name, function name and input. A step in the workflow can receive the output from a previous step as input. 
+        Create a plan represented in JSON by only using the tools listed below. You must use all tools in the list.
+        The workflow should be a JSON array containing only the tool name, function name and input. A step in the workflow can receive the output from a previous step as input. 
         Output example 1:
         {output_format}
         

@@ -1,0 +1,24 @@
+Abstract Planner
+
+Query: I would like to order some mexican food for delivery online
+Plan:
+{'steps': 
+    [
+        {'name': 'Mexican Food Ordering Tool',
+            'description': 'A tool that helps users place orders for Mexican food online for delivery',
+            'inputs': {'Food Item': 
+                            {
+                                'type': 'string', 'description': 'The name of the Mexican food item to order'},
+                                'Location': 
+                                    {
+                                        'type': 'string',
+                                        'description': 'Delivery location'
+                                    }
+                                },
+                            'output': {
+                                'type': 'string', 
+                                'description': 'A confirmation of the order being placed'
+                                }
+                            }
+                        ]
+                    }

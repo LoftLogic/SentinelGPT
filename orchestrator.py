@@ -1,4 +1,5 @@
 from planner import Planner
+from abstractplanner import AbstractPlanner
 from toolselector import ToolSelector
 from registeredtool import RegisteredTool
 from langchain_openai import ChatOpenAI
@@ -15,6 +16,7 @@ class Orchestrator:
         # Map from app names to the RegisteredApp
         self.tools: dict[str, RegisteredTool] = {}
         self.planner: Planner = Planner()
+        self.tool_blind_planner: Planner = AbstractPlanner()
         self.tool_selector: ToolSelector = ToolSelector()
         self.debug = debug
         self.llm: ChatOpenAI = ChatOpenAI(model='gpt-4o', temperature=0.0)
@@ -75,7 +77,10 @@ class Orchestrator:
         Steps:
         - First, synthesizes the output rules
         - Second, choosing which tools should be selected, then grouping them by provider.
-        - Third, an execution plan is drafted and executed
+        - Third, an sequential execution plan involving tools is created
+        - Fourth, the plan is executed and its outputs are gathered
+        - Fifth, the outputs are conformed to the correct type
+        - Sixth, the conformed outputs are synthesized and shown to the user
         """
         if self.debug:
             print(f"Running {query}...")
@@ -83,17 +88,19 @@ class Orchestrator:
         grouping: dict[str, set[str]] = self.__selection_step(query)
         
         # If not apps are expected to be used
+        """
         if not grouping:
             messages = [SystemMessage(content="You are a helpful assistant."), HumanMessage(content=query)]
             response = self.llm.invoke(messages)
             return response.content
+        """
         
         self.__planning_step(query, grouping)
     
     def __synthesize_rules(self, query: str):
         """
         Performs the synthesis step (step 1). Generates synthesis rules for the program to follow.
-
+        NOTE: We might end up removing this
         """
         print("Synthesizing rules for ouput...\n\n")
         
@@ -156,26 +163,27 @@ class Orchestrator:
             tool_info += "Name: " + tool.get_name() + ", Description: " + tool.get_description() + "\n"
             
         print("Tool Info:" + "\n" + tool_info)
-        plan = self.planner.generate_plan(query, tool_info)
+        plan = self.tool_blind_planner.generate_plan(query)
+        # plan = self.planner.generate_plan(query)
         if self.debug:
-            print("Generated plan: ", plan)
+            print(plan)
         return plan
     
-    def execute_plan(self, plan: dict):
+    def __execute_plan(self, plan: dict):
         """
         Executes the given plan. Gives its outputs.
         Fourth step in the process
         """
         pass
     
-    def conform_types(self):
+    def __conform_types(self):
         """
         Conform the outputs from tools to types
         Fifth Step in the process
         """
         pass
     
-    def execute(self) -> str:
+    def __finalize(self, conformed_outputs, synthesis_rule) -> str:
         """
         Use synthesis rules and type conformed output to generate a final output for the user
         Sixth and final step in the process.

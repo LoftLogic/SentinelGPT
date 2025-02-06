@@ -2,7 +2,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from langchain_openai import ChatOpenAI
 from orchestrator import Orchestrator
 from registeredtool import RegisteredTool
-import torch
 
 def run_interface(debug: bool):
     orchestrator: Orchestrator = Orchestrator()
@@ -27,11 +26,9 @@ def run_interface(debug: bool):
     print("Using " + model_name + "... \n")
     print("Message " + model_name + ": (Type :q to exit)")
     while True:
-        # Use this as a prompt: I would like to buy some donuts and deliver them to my house
+        # Use this as a prompt: 
+        # I would like to buy some donuts and deliver them to my house
         prompt = str(input("User: "))
         if prompt.lower() == ":q":
             break
         print(orchestrator.run_query(prompt))
-        
-        
-        

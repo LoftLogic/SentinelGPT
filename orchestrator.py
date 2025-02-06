@@ -197,9 +197,6 @@ class Orchestrator:
         """
         if not self.debug:
             raise RuntimeError("Not in debug mode")
-        if "steps" not in plan.keys():
-            print("Empty plan")
-            return
         steps = 1
         for tool in plan["steps"]:
             print("Step:", steps, "\n")

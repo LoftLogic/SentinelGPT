@@ -8,7 +8,7 @@ from langchain.prompts.chat import (
 
 
 def generate_abstract_tool_template() -> ChatPromptTemplate:
-    planner_output_format = '''
+    tools_output_format = '''
         {
             "apps": 
             [
@@ -30,7 +30,7 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
         }
         '''
         
-    planner_output_empty_format = '''
+    tools_output_empty_format = '''
     {
         "apps": []
     }
@@ -177,6 +177,6 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
         messages=template_planner_message
     )
     
-    template_planner = template_planner.partial(output_format = planner_output_format, output_format_empty = planner_output_empty_format, 
+    template_planner = template_planner.partial(output_format = tools_output_format, output_format_empty = tools_output_empty_format, 
         shot_1 = shot_1, shot_2 = shot_2)
     return template_planner

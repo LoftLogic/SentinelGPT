@@ -11,7 +11,8 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate
 )
 
-from prompts.abstract_templates import generate_abstract_tool_template
+from prompts.abstract_templates import generate_abstract_tool_template, generate_abstract_plan_template
+from parsers import parse_python_code_from_text
 
 """
 Expiremental- this class is to be tested/demoed before being implemented
@@ -38,11 +39,14 @@ class AbstractPlanner():
         self.toolgen_llm: ChatOpenAI = ChatOpenAI(model="gpt-4o", temperature=0.0)
         self.plan_llm: ChatOpenAI = ChatOpenAI(model="gpt-4o", temperature=0.0)
         self.toolgen_template: ChatPromptTemplate = generate_abstract_tool_template()
+        self.plangen_template: ChatPromptTemplate = generate_abstract_plan_template()
 
         # Need to figure out how to parse through the output correctly
-        self.parser = JsonOutputParser()
+        self.tool_parser = JsonOutputParser()
+        # self.plan_parser = PythonCodeOutputParser()
 
-        self.llm_chain = self.toolgen_template | self.toolgen_llm | self.parser
+        self.toolgen_chain = self.toolgen_template | self.toolgen_llm | self.tool_parser
+        self.plangen_chain = self.plangen_template | self.plan_llm
 
     def generate_abstract_tools(self, query, chat_history=None, debug=None) -> dict:
         """
@@ -51,5 +55,15 @@ class AbstractPlanner():
         if chat_history:
             print("Chat history not yet created")
             return
-        output = self.llm_chain.invoke({"input": query})
+        output = self.toolgen_chain.invoke({"input": query})
+        return output
+
+    def generate_abstract_plan(self, query, tools, chat_history=None, debug=None):
+        """
+        Generates a plan for the LLM to follow 
+        """
+        if chat_history:
+            print("Chat history not yet created")
+            return
+        output = self.plangen_chain.invoke({"input": query, "tools": tools})
         return output

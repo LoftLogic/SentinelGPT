@@ -7,6 +7,115 @@ from langchain.prompts.chat import (
 )
 
 
+def generate_abstract_plan_template() -> ChatPromptTemplate:
+    shot_1: str = ("""
+        # This is an example of a user query that requires using a single abstract app.
+
+        User: Generate a poem and count the number of r's
+        Auto-Generated Abstract apps:
+        {'apps': [{'name': 'PoemGenerator', 'description': 'A tool that generates a poem based on a given theme or prompt', 'inputs': {'theme': {'type': 'string', 'description': 'The theme or prompt for the poem'}}, 'output': {'type': 'string', 'description': 'The generated poem'}}]}
+        
+        Generated Output:
+            def main():
+                poem: str = PoemGenerator(theme="nature")
+                result = poem.count('r')
+                return result
+                   
+    """)
+
+    shot_2: str = ("""
+        # This is an example of a user query that requires using two abstract apps and a user input (builtin).
+
+        User input: Please summarize the latest news articles on the topic of AI and send the result in an email 
+                   
+        Auto-Generated Abstract apps:
+        {'apps': [{'name': 'NewsSummarizer', 'description': 'A tool that summarizes the latest news articles on a given topic', 'inputs': {'topic': {'type': 'string', 'description': 'The topic to summarize news about'}}, 'output': {'type': 'string', 'description': 'A summary of the latest news articles on the given topic'}}, {'name': 'EmailSender', 'description': 'A tool that sends an email with the provided content to a specified email address', 'inputs': {'email_address': {'type': 'string', 'description': 'The email address to send the content to'}, 'content': {'type': 'string', 'description': 'The content to be sent in the email'}}, 'output': {'type': 'string', 'description': 'A confirmation that the email has been sent'}}]}
+                   
+        Generated Output:
+            def main():
+                news: str = NewsSummarizer(topic="AI")
+                email_addr: str = UserInput()
+                conf: str = EmailSender(email_address=email_addr, content=news)
+    """)
+
+    shot_3: str = ("""
+        # This is an example of a user query that requires using multiple implementations of a single abstract app.
+
+        User: Check all my email apps and summarize all unread emails
+        
+        Auto-Generated Abstract apps:
+        {'apps': [{'name': 'EmailRetriever', 'description': 'A tool that collects emails from an email application', 'inputs': {}, 'output': {'type': 'list[string]', 'description': 'A list of all emails collected from the specified email application'}}, {'name': 'EmailSummarizer', 'description': 'A tool that summarizes a list of emails', 'inputs': {'emails': {'type': 'list[string]', 'description': 'A list of emails to be summarized'}}, 'output': {'type': 'string', 'description': 'A summary of the provided emails'}}]}
+
+        Generated Output:
+            def main():
+                email_apps = GetAllImplementations(EmailRetriever)
+                emails = []
+                for app in email_apps:
+                    emails.extend(app())
+                summary: str = EmailSummarizer(emails=emails)
+                return summary
+    """)
+
+    template_str = '''
+        # Prompt
+
+        Objective:
+        Your task is to generate a plan that outlines the steps required to complete a user query.
+        The plan should include the abstract apps that need to be used to complete the task.
+        Each abstract app has a name, description, inputs, and output.
+        The plan should be implemented as a Python function that uses the abstract apps to achieve the desired result.
+
+        Tools:
+        An abstract app is a tool that performs a specific task and has a well-defined interface.
+        The abstract app has a name, description, inputs, and output.
+        The inputs and output are described using data types and brief descriptions.
+        The abstract app is implemented as a Python function that takes the required inputs and returns the output.
+
+        In addition to abstract tools, you always have access to the following built-in functions:
+        - UserInput(): A function that prompts the user to provide an input.
+        - GetAllImplementations(app_name): A function that returns all implementations of a given abstract app.
+
+        Plan format:
+        def main():
+            # Use abstract apps to complete the task
+            result = ...
+            return result
+        
+        Here is an example of a generated plan:
+
+        Example 1:
+        {shot_1}
+
+        Example 2:
+        {shot_2}
+
+        Example 3:
+        {shot_3}
+
+
+        Use the following tools to complete the user query:
+        {tools}
+
+        
+        You MUST STRICTLY follow the above provided output examples. Only answer with the specified Python function in a json format, no other text.
+    '''
+
+    template_planner_message = [SystemMessagePromptTemplate(prompt=PromptTemplate(
+        input_variables=['shot_1', 'shot_2', 'shot_3', 'tools'], template=template_str)),
+        HumanMessagePromptTemplate(prompt=PromptTemplate(input_variables=['input'],
+                                                         template="User Query: {input}"))
+    ]
+
+    # Set up a prompt template for the hub planner
+    template_planner = ChatPromptTemplate(
+        input_variables=['shot_1', 'shot_2', 'shot_3', 'tools', 'input'],
+        messages=template_planner_message
+    )
+
+    template_planner = template_planner.partial(shot_1=shot_1, shot_2=shot_2, shot_3=shot_3)
+    return template_planner
+
+
 def generate_abstract_tool_template() -> ChatPromptTemplate:
     tools_output_format = '''
         {
@@ -29,13 +138,13 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
             ]
         }
         '''
-        
+
     tools_output_empty_format = '''
     {
         "apps": []
     }
     '''
-    
+
     shot_1: str = ("""
         # This is an example of a user query that requires a singular tool
         
@@ -66,7 +175,7 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
             ]
         }
     """)
-    
+
     shot_2: str = ("""
     # This is an example of a user query that requires a shopping tool.
 
@@ -98,14 +207,13 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
     }
     """)
 
-    shot_3: str =("""
+    shot_3: str = ("""
     
     """)
-    
-    
+
     # Set up prompt template message for the hub planner
     # NOTE: Need to talk to someone to get this planner to work, notably about app to app interactions which I (Li) don't really understand well yet
-    
+
     template_str = ("""
         '# Prompt
         
@@ -139,7 +247,7 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
             }}
         }}
         
-        Data types that can be used are a primitive or a list of primtives.
+        Data types that can be used are a primitive or a list of primitives
         Primitives can be an integer, float, or string.
         
         Once you have completed your thought process, generate the structured JSON output 
@@ -163,20 +271,20 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
         
         You MUST STRICTLY follow the above provided output examples. Only answer with the specified JSON format, no other text        
         """
-    )
-    
+                    )
+
     template_planner_message = [SystemMessagePromptTemplate(prompt=PromptTemplate(
-    input_variables=['output_format', 'output_format_empty', 'shot_1', 'shot_2'], template= template_str)),
-    HumanMessagePromptTemplate(prompt=PromptTemplate(input_variables=['input'], 
-    template="User Query: {input} \n Ensure that a tool is always used if applicable."))
+        input_variables=['output_format', 'output_format_empty', 'shot_1', 'shot_2'], template=template_str)),
+        HumanMessagePromptTemplate(prompt=PromptTemplate(input_variables=['input'],
+                                                         template="User Query: {input} \n Ensure that a tool is always used if applicable."))
     ]
 
     # Set up a prompt template for the hub planner
     template_planner = ChatPromptTemplate(
-        input_variables=['output_format', 'output_format_empty', 'shot_1', 'shot_2', 'input'], 
+        input_variables=['output_format', 'output_format_empty', 'shot_1', 'shot_2', 'input'],
         messages=template_planner_message
     )
-    
-    template_planner = template_planner.partial(output_format = tools_output_format, output_format_empty = tools_output_empty_format, 
-        shot_1 = shot_1, shot_2 = shot_2)
+
+    template_planner = template_planner.partial(output_format=tools_output_format, output_format_empty=tools_output_empty_format,
+                                                shot_1=shot_1, shot_2=shot_2)
     return template_planner

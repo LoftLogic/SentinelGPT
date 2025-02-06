@@ -11,7 +11,7 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate
 )
 
-from prompts.templates import generate_abstract_tool_template
+from prompts.abstract_templates import generate_abstract_tool_template
 
 """
 Expiremental- this class is to be tested/demoed before being implemented

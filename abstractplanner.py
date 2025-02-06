@@ -25,6 +25,7 @@ Ideation:
     - The abstract planner will then create an abstract plan (Evan Rose and Tushin will do this part)
 """
 
+
 class AbstractPlanner():
     """
     Responsible for performing tool-blind strategization
@@ -32,16 +33,17 @@ class AbstractPlanner():
     This abstract plan will be utilized by the Orchestrator with concrete apps.
     The purpose is to dissallow malicious apps to interfere with the planning process.
     """
+
     def __init__(self):
-        self.llm: ChatOpenAI = ChatOpenAI(model="gpt-4o", temperature=0.0)
-        self.template: ChatPromptTemplate = generate_abstract_tool_template()
-        
+        self.toolgen_llm: ChatOpenAI = ChatOpenAI(model="gpt-4o", temperature=0.0)
+        self.plan_llm: ChatOpenAI = ChatOpenAI(model="gpt-4o", temperature=0.0)
+        self.toolgen_template: ChatPromptTemplate = generate_abstract_tool_template()
+
         # Need to figure out how to parse through the output correctly
         self.parser = JsonOutputParser()
-        
-        self.llm_chain = self.template | self.llm | self.parser
-        
-        
+
+        self.llm_chain = self.toolgen_template | self.toolgen_llm | self.parser
+
     def generate_abstract_tools(self, query, chat_history=None, debug=None) -> dict:
         """
         Generates a plan for the LLM to follow (in the form of a dictionary).

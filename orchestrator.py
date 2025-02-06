@@ -198,9 +198,5 @@ class Orchestrator:
         if not self.debug:
             raise RuntimeError("Not in debug mode")
         steps = 1
-        for tool in plan["steps"]:
-            print("Step:", steps, "\n")
-            for key, value in tool.items():
-                print(key.upper() + ": ")
-                print(value)
-            steps += 1
+        print("Tools: ")
+        print(plan)

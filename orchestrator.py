@@ -163,8 +163,7 @@ class Orchestrator:
             tool_info += "Name: " + tool.get_name() + ", Description: " + tool.get_description() + "\n"
             
         print("Tool Info:" + "\n" + tool_info)
-        plan = self.tool_blind_planner.generate_plan(query)
-        # plan = self.planner.generate_plan(query)
+        plan = self.tool_blind_planner.generate_abstract_tools(query)
         if self.debug:
             self.__print_plan(plan)
             print("plan:", plan)

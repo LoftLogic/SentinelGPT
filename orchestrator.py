@@ -166,7 +166,8 @@ class Orchestrator:
         plan = self.tool_blind_planner.generate_plan(query)
         # plan = self.planner.generate_plan(query)
         if self.debug:
-            print(plan)
+            self.__print_plan(plan)
+            print("plan:", plan)
         return plan
     
     def __execute_plan(self, plan: dict):
@@ -190,3 +191,20 @@ class Orchestrator:
         """
         final_prompt = ""
         return(self.invoke(final_prompt).content)
+        
+    def __print_plan(self, plan: dict):
+        """
+        Purely for debugging/logging.
+        """
+        if not self.debug:
+            raise RuntimeError("Not in debug mode")
+        if "steps" not in plan.keys():
+            print("Empty plan")
+            return
+        steps = 1
+        for tool in plan["steps"]:
+            print("Step:", steps, "\n")
+            for key, value in tool.items():
+                print(key.upper() + ": ")
+                print(value)
+            steps += 1

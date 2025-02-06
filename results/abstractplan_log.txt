@@ -22,3 +22,28 @@ Plan:
                             }
                         ]
                     }
+
+Query: I would like to get the latest news reports on Cybersecurity, then use gmail to send the reports to my friend johndoe@gmail.com
+
+Plan:
+Step: 1 
+
+NAME: 
+News Fetcher
+DESCRIPTION: 
+A tool that fetches the latest news reports on a specified topic
+INPUTS: 
+{'Topic': {'type': 'string', 'description': 'The topic to fetch news reports on'}}
+OUTPUT: 
+{'type': 'list of strings', 'description': 'A list of the latest news reports on the specified topic'}
+Step: 1 
+
+NAME: 
+Email Sender
+DESCRIPTION: 
+A tool that sends an email with specified content to a given email address
+INPUTS: 
+{'Email Address': {'type': 'string', 'description': "The recipient's email address"}, 'Content': {'type': 'list of strings', 'description': 'The content to be sent in the email'}}
+OUTPUT: 
+{'type': 'string', 'description': 'A confirmation of the email being sent'}
+plan: {'steps': [{'name': 'News Fetcher', 'description': 'A tool that fetches the latest news reports on a specified topic', 'inputs': {'Topic': {'type': 'string', 'description': 'The topic to fetch news reports on'}}, 'output': {'type': 'list of strings', 'description': 'A list of the latest news reports on the specified topic'}}, {'name': 'Email Sender', 'description': 'A tool that sends an email with specified content to a given email address', 'inputs': {'Email Address': {'type': 'string', 'description': "The recipient's email address"}, 'Content': {'type': 'list of strings', 'description': 'The content to be sent in the email'}}, 'output': {'type': 'string', 'description': 'A confirmation of the email being sent'}}]}

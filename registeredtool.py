@@ -12,6 +12,7 @@ class RegisteredTool():
         self.provider = provider
         self.clearence = clearance
     
+    
     """
     Returns the name of the field.
     Equivelent to self.tool.name

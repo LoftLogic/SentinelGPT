@@ -1,8 +1,3 @@
-from langchain_openai import ChatOpenAI
-
-from langchain_openai import ChatOpenAI
-
-from langchain_core.output_parsers import JsonOutputParser
 
 from langchain.prompts import PromptTemplate
 from langchain.prompts.chat import (
@@ -11,10 +6,11 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate
 )
 
-def generate_template() -> ChatPromptTemplate:
+
+def generate_abstract_tool_template() -> ChatPromptTemplate:
     planner_output_format = '''
         {
-            "steps": 
+            "apps": 
             [
                 {
                     "name": "Tool name 1",
@@ -26,16 +22,9 @@ def generate_template() -> ChatPromptTemplate:
                 {
                     "name": "Tool name 2",
                     "input": {
-                        "input": "<result_1>"
-                    },
-                    "output": "result_2"
-                },
-                {
-                    "name": "Tool name 3",
-                    "input": {
                         "query": str
                     },
-                    "output": "result_3"
+                    "output": "result_2"
                 }
             ]
         }
@@ -43,7 +32,7 @@ def generate_template() -> ChatPromptTemplate:
         
     planner_output_empty_format = '''
     {
-        "steps": []
+        "apps": []
     }
     '''
     
@@ -54,7 +43,7 @@ def generate_template() -> ChatPromptTemplate:
         
         Generated output:
         {
-            "steps": 
+            "apps": 
             [
                 {
                     "name": "Temperature Checker",
@@ -70,7 +59,7 @@ def generate_template() -> ChatPromptTemplate:
                         }
                     },
                     "output": {
-                        "type": "string",
+                        "type": "float",
                         "description": "The temperature in farenheit of the specified time and location"
                     }
                 },
@@ -85,7 +74,7 @@ def generate_template() -> ChatPromptTemplate:
 
     Generated output:
     {
-        "steps": 
+        "apps": 
         [
             {
                 "name": "Pizza Ordering Tool",
@@ -109,6 +98,10 @@ def generate_template() -> ChatPromptTemplate:
     }
     """)
 
+    shot_3: str =("""
+    
+    """)
+    
     
     # Set up prompt template message for the hub planner
     # NOTE: Need to talk to someone to get this planner to work, notably about app to app interactions which I (Li) don't really understand well yet
@@ -119,9 +112,8 @@ def generate_template() -> ChatPromptTemplate:
         Objective:
         Your to act as a planner in charge of devising a strategy to help users complete a given task. 
         These tasks may or may not involve the usage of external tools. Your specific role is to devise 
-        any number of abstract tools (can be 0 or can be many) that are necessary to complete the user task, 
-        and a sequential order of implementation in the case that tools may need the output of others in 
-        the user query. Assume that each tool is designed for a particular task.
+        a number of abstract tools (can be 0 or can be many) that are necessary to complete the user task.
+        Assume that each tool is designed for a particular task.
         
                 
         Tools:
@@ -137,15 +129,18 @@ def generate_template() -> ChatPromptTemplate:
             "description": "A brief description of what the tool does",
             "inputs": {{
                 "parameter_1_name": {{
-                    "type": "data type of the parameter (e.g., int, string, etc)",
+                    "type": "data type of the parameter,
                     "description": "A brief description of the parameter"
                 }}
             }},
             "output": {{
-                "type": "data type of the output (e.g., int, string, etc)",
+                "type": "data type of the output,
                 "description": "A brief description of the output"
             }}
         }}
+        
+        Data types that can be used are a primitive or a list of primtives.
+        Primitives can be an integer, float, or string.
         
         Once you have completed your thought process, generate the structured JSON output 
         following this format:
@@ -164,6 +159,7 @@ def generate_template() -> ChatPromptTemplate:
         
         Example 2:
         {shot_2}
+        
         
         You MUST STRICTLY follow the above provided output examples. Only answer with the specified JSON format, no other text        
         """
@@ -184,35 +180,3 @@ def generate_template() -> ChatPromptTemplate:
     template_planner = template_planner.partial(output_format = planner_output_format, output_format_empty = planner_output_empty_format, 
         shot_1 = shot_1, shot_2 = shot_2)
     return template_planner
-
-"""
-Expiremental- this class is to be tested/demoed before being implemented
-It is not intended to be used (yet) when the user specifies a specific tool (e.g 'Use outlook to send an email')
-
-Ideation:
-    - Recieves an abstract plan
-    - Recieves a list of available tools
-    - Tries to "match" tools
-    - Runs an LLM session in parallel with each available app group
-        - It is critical that the session cannot be interfered with by another apps description if its from a different group
-"""
-class ConcretePlanner():
-    """
-    Represents a planner that implements the generated abstract plan.
-    Has the following responsibilities:
-    - "Match" a corresponding abstract tool to its concrete equivelent
-    - If multiple options are available, and are in seperate groups, run them all cuncurrently
-    - If a match fails, then...
-        - Idea 1: Use a "plan adpter", which can interpret commands from one and rely them in the form of bools or enums to the other 
-            - This would avoid more attack surfaces
-    """
-    
-    def __init__(self, tool_grouping: dict):
-        pass
-    
-    def adapt_plan(self, plan: dict):
-        for abs_tool in plan:
-            self.__match_plan(plan)
-    
-    def __match_tool(self, abstract_tool):
-        pass

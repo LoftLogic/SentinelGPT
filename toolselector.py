@@ -23,7 +23,7 @@ class ToolSelector:
         # self.tools: dict[str, set[str]] = {} Not sure yet if this should be a returned value or a part of state
 
     
-    def get_similarities(self, query: str, tools: list[RegisteredTool]) -> dict[str, float]:
+    def get_similarities(self, query: str, tools: set[RegisteredTool]) -> dict[RegisteredTool, float]:
         """
         Uses vector embeddings to get a numerical representation of simalirities between each tools description and the user prompt
 
@@ -42,11 +42,11 @@ class ToolSelector:
         for tool in tools:
             description_embedding = self.embedding.embed_query(tool.get_description())
             similarity = cosine_similarity(query_embedding, description_embedding)
-            result[tool.get_name()] = similarity
+            result[tool] = similarity
         
         return result
     
-    def filter_tools(self, similarities: dict[str, float], threshold = 0.83) -> set[str]:
+    def filter_tools(self, similarities: dict[str, float], threshold = 0.83) -> set[StructuredTool]:
         """
         Filters out the tools based on their similarity scores, removing any that don't meet a certain threshold. 
         By default, the threshold will be 0.83
@@ -58,10 +58,11 @@ class ToolSelector:
         return:
             A list of tool names that meet the threshold
         """
-        return set({name: similarity for name, similarity in similarities.items() if similarity > threshold}.keys())
+        return set({tool: similarity for tool, similarity in similarities.items() if similarity > threshold}.keys())
+
         
         
-    def group_tools(self, tools: list[RegisteredTool]) -> dict[str, set[str]]:
+    def group_tools(self, tools: set[RegisteredTool]) -> dict[str, set[RegisteredTool]]:
         """
         Groups a list of tools into a dictionary based on their providers
         
@@ -69,12 +70,12 @@ class ToolSelector:
             names: List of names of the tools to use
             
         return:
-            A dictionary mapping providers and their associated tool's names
+            A dictionary mapping providers and their associated tool's
         """
-        result: dict[str, str] = {}
+        result: dict[str, set[RegisteredTool]] = {}
         
         for tool in tools:
-            result[tool.provider] = result.get(tool.provider, set()).union({tool.get_name()})
+            result[tool.provider] = result.get(tool.provider, set()).union({tool})
         
         return result
             

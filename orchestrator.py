@@ -4,6 +4,7 @@ from toolselector import ToolSelector
 from registeredtool import RegisteredTool
 from langchain_openai import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
+from astpretty import pprint
 
 from parsers import parse_ai_message_to_ast
 
@@ -16,8 +17,7 @@ class Orchestrator:
 
     def __init__(self, debug: bool = True):
         # Map from app names to the RegisteredApp
-        self.tools: dict[str, RegisteredTool] = {}
-        self.planner: Planner = Planner()
+        self.tools: set[RegisteredTool] = set()
         self.tool_blind_planner: AbstractPlanner = AbstractPlanner()
         self.tool_selector: ToolSelector = ToolSelector()
         self.debug = debug
@@ -33,7 +33,7 @@ class Orchestrator:
         returns:
             self for easy callback
         """
-        self.tools[tool.get_name()] = tool
+        self.tools.add(tool)
         if (self.debug):
             print(f"{tool.get_name()} added")
         return self
@@ -109,33 +109,25 @@ class Orchestrator:
 
         Returns:
             A mapping of providers to its corresponding set of tool names
-
-        Raises:
-            ValueError if a name is generated from tool_selector but isn't registered in self.tools
-        """
-        tools = list(self.tools.values())
-        print("Filtering and grouping tools...\n\n")
-        similarities: dict[str, float] = self.tool_selector.get_similarities(query, tools)
+        """        
+        if self.debug:
+            print("Filtering and grouping tools...\n\n")
+        
+        similarities: dict[str, float] = self.tool_selector.get_similarities(query, self.tools)
+        
         if self.debug:
             print("\nSimilarity scores: \n")
-            for name, score in similarities.items():
-                print(f"{name} has a simaliarity of {score}")
+            for tool, score in similarities.items():
+                print(f"{tool.get_name()} has a simaliarity of {score}")
 
-        names: set[str] = self.tool_selector.filter_tools(similarities)
+        tools: set[RegisteredTool] = self.tool_selector.filter_tools(similarities)
 
         if self.debug:
             print("\nSelected Tools:")
-        tools: list[RegisteredTool] = []
+            for tool in tools:
+                print(tool.get_name())
 
-        for name in names:
-            if (self.tools[name]):
-                tools.append(self.tools[name])
-            else:
-                raise ValueError("Name not stored in state")
-            if self.debug:
-                print(name)
-
-        grouping: dict[str, set[str]] = self.tool_selector.group_tools(tools)
+        grouping: dict[str, set[RegisteredTool]] = self.tool_selector.group_tools(tools)
         if self.debug:
             for provider in grouping:
                 print(f"Tools in {provider}:")
@@ -144,7 +136,7 @@ class Orchestrator:
                 print("\n")
         return grouping
 
-    def __planning_step(self, query: str, grouping: dict[str, set[str]]):
+    def __planning_step(self, query: str, grouping: dict[str, set[RegisteredTool]]):
         """
         Performs the planning step (step 3). Plans the tools accordingly to their group.
 
@@ -154,23 +146,21 @@ class Orchestrator:
         Returns:
             - A sequential plan of execution for the apps
         """
-        print("Generating a plan of execution... \n\n")
-        tools_ls = [self.tools[name] for names in grouping.values() for name in names]
-        tool_info: str = ""
-        for tool in tools_ls:
-            tool_info += "Name: " + tool.get_name() + ", Description: " + tool.get_description() + "\n"
 
-        print("Tool Info:" + "\n" + tool_info)
         tools = self.tool_blind_planner.generate_abstract_tools(query)
-        print(tools)
+        if self.debug:
+            print("Generating a plan of execution... \n\n")
+            print("Abstract tool signatures:\n")
+            print(tools)
         plan = self.tool_blind_planner.generate_abstract_plan(query, tools)
-        plan_str = plan.content
-        print(plan_str)
+        if self.debug:
+            print("Plan str:\n")
+            plan_str = plan.content
+            print(plan_str)
         plan = parse_ai_message_to_ast(plan)
         if self.debug:
             # self.__print_plan(plan)
             # from pprint import pprint
-            from astpretty import pprint
             pprint("plan:", plan)
 
         return plan

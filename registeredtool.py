@@ -7,7 +7,7 @@ class RegisteredTool():
     Composes with StructuredTool
     State also includes clearance level and tool provider
     """
-    def __init__(self, name: str, func, description: str, provider: str = "Default", clearance: Clearence = Clearence.LOW):
+    def __init__(self, name: str, func, description: str, provider: str = "Unaffiliated", clearance: Clearence = Clearence.LOW):
         self.tool = StructuredTool.from_function(name=name, func=func, description=description)
         self.provider = provider
         self.clearence = clearance

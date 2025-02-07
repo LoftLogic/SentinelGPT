@@ -5,10 +5,12 @@ from interface import run_interface
 import os
 from toolselector import ToolSelector
 from apikeys.OPENAI_API_KEY import OPENAI_API_KEY
-
+from registeredtool import RegisteredTool
 
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
+def foo(x):
+    return x
 
 def main():
     run_interface(True)

@@ -141,23 +141,16 @@ class Orchestrator:
             - A sequential plan of execution for the apps
         """
 
-        tools = self.tool_blind_planner.generate_abstract_tools(query)
+        abstract_tools = self.tool_blind_planner.generate_abstract_tools(query)
         if self.debug:
             print("Generating a plan of execution... \n\n")
             print("Abstract tool signatures:\n")
-            print(tools)
-        plan = self.tool_blind_planner.generate_abstract_plan(query, tools)
-        if self.debug:
-            print("Plan str:\n")
-            plan_str = plan.content
-            print(plan_str)
+            print(abstract_tools)
+        plan = self.tool_blind_planner.generate_abstract_plan(query, abstract_tools)
         plan = parse_ai_message_to_ast(plan)
         if self.debug:
-            # self.__print_plan(plan)
-            # from pprint import pprint
-            pprint("plan:", plan)
-
-        self.concrete_planner.adapt_plan(grouping, tools['apps'])        
+            self.__print_plan(plan)
+        self.concrete_planner.adapt_plan(grouping, abstract_tools['apps'])        
         return plan
 
     def __execute_plan(self, plan: dict):

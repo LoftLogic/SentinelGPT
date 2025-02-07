@@ -58,11 +58,15 @@ class ConcretePlanner():
         # THRESHOLD: float = 0.80
         # NOTE: Lift to orchestrator later
         embeddings = OpenAIEmbeddings()
-        tool_map: dict = {}
         for group in tool_grouping:
             docs = []
+            tool_index_mapping = {tool: idx for idx, tool in enumerate(tool_grouping[group])}
             for tool in tool_grouping[group]:
-                docs.append(Document(page_content=tool.get_description()))
+                index = tool_index_mapping.get(tool)
+                docs.append(Document(page_content=tool.get_description(), metadata={"index": index}))
             faiss_store = FAISS.from_documents(docs, embeddings)
+            retrieved_docs = faiss_store.similarity_search(abstract_tool["description"])
             # Write code that converts the docs list into a list of numerical simaliarity scores between abstract_tool["description"] and the docs
-            #print(f"Results for {group}:", best_doc, sep="\n")
+            print(f"Results for {group}:")
+            for doc in retrieved_docs:
+                print((list(tool_index_mapping.keys())[doc.metadata['index']]).get_name())

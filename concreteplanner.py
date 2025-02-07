@@ -2,6 +2,17 @@ from langchain_openai import ChatOpenAI
 
 from registeredtool import RegisteredTool
 
+from langchain.prompts.chat import ChatPromptTemplate
+
+from prompts.concrete_templates import generate_concrete_template
+
+from langchain_core.output_parsers import JsonOutputParser
+
+from langchain_community.vectorstores import FAISS
+from langchain_openai import OpenAIEmbeddings
+from langchain.schema import Document
+
+
 """
 Expiremental
 
@@ -23,13 +34,35 @@ class ConcretePlanner():
             - This would avoid more attack surfaces
     """
     
-    def __init__(self, tools, tool_grouping: dict):
-        #self.tool_grouping: dict[str: set[]]
-        pass
+    def __init__(self):
+        self.planner_llm: ChatOpenAI = ChatOpenAI(model="gpt-4o", temperature=0.0)
+        self.planner_template: ChatPromptTemplate = generate_concrete_template()
+        self.planner_parser = JsonOutputParser()
+        
+        self.plangen_chain = self.planner_template | self.planner_llm | self.planner_parser
+
+    def adapt_plan(self, tool_grouping: dict[str, set[RegisteredTool]], abs_tools: list[dict]):
+        for abs_tool in abs_tools:
+            self.__match_tool(tool_grouping, abs_tool)
     
-    def adapt_plan(self, plan: dict):
-        for abs_tool in plan:
-            self.__match_tool(abs_tool)
-    
-    def __match_tool(self, abstract_tool):
-        pass
+    def __match_tool(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict):
+        """
+        Matches abstract tools to concrete tools
+        
+        params:
+            tool_grouping- map from provider to tools
+        Note: An abstract tools has: name, description, input, output,
+        """
+        if "description" not in abstract_tool:
+            raise ValueError("Abstract Tool has no description")
+        # THRESHOLD: float = 0.80
+        # NOTE: Lift to orchestrator later
+        embeddings = OpenAIEmbeddings()
+        tool_map: dict = {}
+        for group in tool_grouping:
+            docs = []
+            for tool in tool_grouping[group]:
+                docs.append(Document(page_content=tool.get_description()))
+            faiss_store = FAISS.from_documents(docs, embeddings)
+            # Write code that converts the docs list into a list of numerical simaliarity scores between abstract_tool["description"] and the docs
+            #print(f"Results for {group}:", best_doc, sep="\n")

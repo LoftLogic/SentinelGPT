@@ -148,7 +148,7 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
     shot_1: str = ("""
         # This is an example of a user query that requires a singular tool
         
-        User: I would like to know what the temperature it is in Brooklyn at 6pm today.
+        User: I would like to know what the temperature it in Brooklyn at 6pm today.
         
         Generated output:
         {
@@ -207,18 +207,13 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
     }
     """)
 
-    shot_3: str = ("""
-    
-    """)
-
     # Set up prompt template message for the hub planner
-    # NOTE: Need to talk to someone to get this planner to work, notably about app to app interactions which I (Li) don't really understand well yet
 
     template_str = ("""
         '# Prompt
         
         Objective:
-        Your to act as a planner in charge of devising a strategy to help users complete a given task. 
+        Your to act as a tool generator in charge of devising a strategy to help users complete a given task. 
         These tasks may or may not involve the usage of external tools. Your specific role is to devise 
         a number of abstract tools (can be 0 or can be many) that are necessary to complete the user task.
         Assume that each tool is designed for a particular task.

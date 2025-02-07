@@ -2,6 +2,8 @@ from planner import Planner
 from abstractplanner import AbstractPlanner
 from toolselector import ToolSelector
 from registeredtool import RegisteredTool
+from concreteplanner import ConcretePlanner
+
 from langchain_openai import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from astpretty import pprint
@@ -19,6 +21,7 @@ class Orchestrator:
         # Map from app names to the RegisteredApp
         self.tools: set[RegisteredTool] = set()
         self.tool_blind_planner: AbstractPlanner = AbstractPlanner()
+        self.concrete_planner: ConcretePlanner = ConcretePlanner()
         self.tool_selector: ToolSelector = ToolSelector()
         self.debug = debug
         self.llm: ChatOpenAI = ChatOpenAI(model='gpt-4o', temperature=0.0)
@@ -83,7 +86,6 @@ class Orchestrator:
         """
         if self.debug:
             print(f"Running {query}...")
-        self.__synthesize_rules(query)
         grouping: dict[str, set[str]] = self.__selection_step(query)
 
         # If not apps are expected to be used
@@ -93,15 +95,7 @@ class Orchestrator:
             response = self.llm.invoke(messages)
             return response.content
         """
-
         self.__planning_step(query, grouping)
-
-    def __synthesize_rules(self, query: str):
-        """
-        Performs the synthesis step (step 1). Generates synthesis rules for the program to follow.
-        NOTE: We might end up removing this
-        """
-        print("Synthesizing rules for ouput...\n\n")
 
     def __selection_step(self, query: str) -> dict[str, set[str]]:
         """
@@ -113,7 +107,7 @@ class Orchestrator:
         if self.debug:
             print("Filtering and grouping tools...\n\n")
         
-        similarities: dict[str, float] = self.tool_selector.get_similarities(query, self.tools)
+        similarities: dict[RegisteredTool, float] = self.tool_selector.get_similarities(query, self.tools)
         
         if self.debug:
             print("\nSimilarity scores: \n")
@@ -132,7 +126,7 @@ class Orchestrator:
             for provider in grouping:
                 print(f"Tools in {provider}:")
                 for tool in grouping[provider]:
-                    print(tool)
+                    print(tool.get_name())
                 print("\n")
         return grouping
 
@@ -163,6 +157,7 @@ class Orchestrator:
             # from pprint import pprint
             pprint("plan:", plan)
 
+        self.concrete_planner.adapt_plan(grouping, tools['apps'])        
         return plan
 
     def __execute_plan(self, plan: dict):

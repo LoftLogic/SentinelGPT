@@ -12,6 +12,8 @@ from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain.schema import Document
 
+import ast
+
 
 """
 Expiremental
@@ -36,14 +38,20 @@ class ConcretePlanner():
     
     def __init__(self):
         self.planner_llm: ChatOpenAI = ChatOpenAI(model="gpt-4o", temperature=0.0)
-        self.planner_template: ChatPromptTemplate = generate_concrete_template()
+        self.planner_template: ChatPromptTemplate = generate_concrete_template() # We may end up not using this
         self.planner_parser = JsonOutputParser()
         
         self.plangen_chain = self.planner_template | self.planner_llm | self.planner_parser
 
-    def adapt_plan(self, tool_grouping: dict[str, set[RegisteredTool]], abs_tools: list[dict]):
+    def adapt_plan(self, tool_grouping: dict[str, set[RegisteredTool]], abs_tools: list[dict], abs_plan: ast.Module):
+        """
+        Adapts an abstract plan, creating a concrete executable equivelent
+        Starts by matching each abstract developed tool with an existing concrete tool
+        Then reformats the abstract plan to use the selected concrete tools
+        """
         for abs_tool in abs_tools:
-            self.__match_tool(tool_grouping, abs_tool)
+            selected_tools = self.__match_tool(tool_grouping, abs_tool) # Return value/type of __match_tool() currently unknown
+
     
     def __match_tool(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict):
         """
@@ -52,6 +60,9 @@ class ConcretePlanner():
         params:
             tool_grouping- map from provider to tools
         Note: An abstract tools has: name, description, input, output,
+        
+        return:
+            TBD
         """
         if "description" not in abstract_tool:
             raise ValueError("Abstract Tool has no description")
@@ -60,7 +71,7 @@ class ConcretePlanner():
         embeddings = OpenAIEmbeddings()
         for group in tool_grouping:
             docs = []
-            tool_index_mapping = {tool: idx for idx, tool in enumerate(tool_grouping[group])}
+            tool_index_mapping = { tool: idx for idx, tool in enumerate(tool_grouping[group]) }
             for tool in tool_grouping[group]:
                 index = tool_index_mapping.get(tool)
                 docs.append(Document(page_content=tool.get_description(), metadata={"index": index}))

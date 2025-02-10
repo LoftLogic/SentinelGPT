@@ -145,12 +145,22 @@ class Orchestrator:
         if self.debug:
             print("Generating a plan of execution... \n\n")
             print("Abstract tool signatures:\n")
-            print(abstract_tools)
+            if 'apps' in abstract_tools:
+                n = 1
+                for tool in abstract_tools['apps']:
+                    print(f"Tool {n}")
+                    print(f"Name: {tool['name']}")
+                    print(f"Description: {tool['description']}")
+                    print(f"Inputs: {tool['inputs']}")
+                    if 'output' in tool and 'type' in tool['output'] and 'description' in tool['output']:
+                        print(f"Output: {tool['output']['type']}- {tool['output']['description']}")
+                    print("\n\n")
+                    n += 1
+            else:
+                print(abstract_tools)
         plan = self.tool_blind_planner.generate_abstract_plan(query, abstract_tools)
         plan = parse_ai_message_to_ast(plan)
-        if self.debug:
-            self.__print_plan(plan)
-        self.concrete_planner.adapt_plan(grouping, abstract_tools['apps'])        
+        self.concrete_planner.adapt_plan(grouping, abstract_tools['apps'], plan)        
         return plan
 
     def __execute_plan(self, plan: dict):
@@ -166,6 +176,7 @@ class Orchestrator:
         Fifth Step in the process
         """
         pass
+    
 
     def __finalize(self, conformed_outputs, synthesis_rule) -> str:
         """
@@ -174,13 +185,3 @@ class Orchestrator:
         """
         final_prompt = ""
         return (self.invoke(final_prompt).content)
-
-    def __print_plan(self, plan: dict):
-        """
-        Purely for debugging/logging.
-        """
-        if not self.debug:
-            raise RuntimeError("Not in debug mode")
-        steps = 1
-        print("Tools: ")
-        print(plan)

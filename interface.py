@@ -1,22 +1,11 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
 from langchain_openai import ChatOpenAI
 from orchestrator import Orchestrator
-from registeredtool import RegisteredTool
+from addtoolfunctions import *
 
 def run_interface(debug: bool):
     orchestrator: Orchestrator = Orchestrator()
-    def foo():
-        return ""
-    orchestrator.add_tool(
-        RegisteredTool("MyDonutDelivery", foo, "MyDonutDelivery allows users to buy donuts online and have them delivered to their house")
-        ).add_tool(
-            RegisteredTool("Pastry Shopper", foo, "Pastry Shopper allows the user to buy pastries for delivery online", "PastryEmpire")
-        ).add_tool(
-            RegisteredTool("Donut Shopper", foo, "Donut Shopper is a tool to purchase and deliver donuts online", "PastryEmpire")
-        ).add_tool(
-            RegisteredTool("Restuarant Booker", foo, "Restuarant booker allows for booking restaurants online")
-        )
-    
+    add_food_delivery_suite(orchestrator)
+    add_workspace_utility_suite(orchestrator)
     if debug:
         print("Running in Debug Mode... \n")
     else:
@@ -24,7 +13,7 @@ def run_interface(debug: bool):
     model = ChatOpenAI(model='gpt-4o', temperature=0.0)
     model_name: str = model.model_name
     print("Using " + model_name + "... \n")
-    print("Message " + model_name + ": (Type :q to exit)")
+    print("Message " + model_name + " (Type :q to exit):")
     while True:
         # Use this as a prompt: 
         # I would like to buy some donuts and deliver them to my house

@@ -21,9 +21,8 @@ def parse_python_code_from_text(text: str) -> ast.Module:
     code = code.strip()
     print("stripped code, pre-AST:\n", code)
     syntax_tree = ast.parse(code)
-    print(ast.dump(syntax_tree, indent=4))
+    print("AST DUMP:\n", ast.dump(syntax_tree, indent=4))
     return syntax_tree
-
 
 def parse_ai_message_to_ast(ai_message: AIMessage) -> ast.Module:
     """

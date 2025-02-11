@@ -168,7 +168,7 @@ class Orchestrator:
                 print(abstract_tools)
         plan = self.tool_blind_planner.generate_abstract_plan(query, abstract_tools)
         code = parse_python_code_to_ast(plan)
-        plan = parse_ai_message_to_ast(plan)
+        # plan = parse_ai_message_to_ast(plan)
         self.concrete_planner.adapt_plan(grouping, abstract_tools['apps'], code)        
         return plan
 

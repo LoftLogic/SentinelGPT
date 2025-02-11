@@ -4,8 +4,9 @@ from addtoolfunctions import *
 
 def run_interface(debug: bool):
     orchestrator: Orchestrator = Orchestrator()
-    add_food_delivery_suite(orchestrator)
-    add_workspace_utility_suite(orchestrator)
+    # add_food_delivery_suite(orchestrator)
+    # add_workspace_utility_suite(orchestrator)
+    add_weaker_google_suite(orchestrator)
     if debug:
         print("Running in Debug Mode... \n")
     else:

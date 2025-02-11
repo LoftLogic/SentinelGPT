@@ -38,6 +38,9 @@ def read_graph(graph_name: str):
 def read_slides(slides_name: str):
     pass
 
+def summarize(text: str):
+    pass
+
 def add_workspace_utility_suite(orchestrator: Orchestrator):
     """
     Adds an email, documents, graphing, and slideshow app for Drive and Microsoft Office Accordingly.
@@ -59,4 +62,20 @@ def add_workspace_utility_suite(orchestrator: Orchestrator):
     ).add_tool(
         RegisteredTool("Powerpoint", read_slides, "Powerpoint allows users to use AI to read and summarize their slideshows in Microsoft Powerpoint", "Microsoft Office")
     )
-    
+
+def add_weaker_google_suite(orchestrator: Orchestrator):
+    """
+    Google suite except docs cannot summarize the document, instead another tool does the summarization
+    NOTE: Obvious elephant in the room- the summarizer would likely be in a different group. We will need to address this.
+    """
+    orchestrator.add_tool(
+        RegisteredTool("Gmail", send_email, "Gmail allows users to send emails through google mail", "Google Drive")
+    ).add_tool(
+        RegisteredTool("Docs", read_document, "Docs allows users to retrieve a google document from their drive account", "Google Drive")
+    ).add_tool(
+        RegisteredTool("Sheets", read_graph, "Sheets allows users to use AI to read and summarize their graphs from Google Sheets", "Google Drive")
+    ).add_tool(
+        RegisteredTool("Slides", read_slides, "Slides allows users to use AI to read and summarize their slideshows from Google Slides", "Google Drive")
+    ).add_tool(
+        RegisteredTool("Summarizer", summarize, "Summarizer allows users to summarize a body of pure text", "Google Drive")
+    )

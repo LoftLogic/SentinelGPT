@@ -94,9 +94,9 @@ class ConcretePlanner():
         # NOTE: We need to implement a different type of selection for 'Unaffiliated'
         for group in tool_grouping:
             names: dict = {}
+            
             for tool in tool_grouping[group]:
                 names[tool.get_name()] = tool
-            
             
             docs = []
             tool_index_mapping = { tool: idx for idx, tool in enumerate(tool_grouping[group]) }
@@ -135,13 +135,27 @@ class ConcretePlanner():
         return matches
                     
     
-    def __match_func(self, code: str, matches: dict[str, dict[str, RegisteredTool]]):
+    def __match_func(self, code: str, matches: dict[str, dict[str, list[RegisteredTool]]]):
+        """
+        Matches functions for each group
+        """
         code: list[str] = code.splitlines()
-        # Map abs tool function name to abs tool name
+        # Map abstract tool name to its function name
         functions: dict[str, str] = {}
         for abs_tool in matches:
-            functions[abs_tool.replace(" ", "")] = abs_tool
-        pass
+            functions[abs_tool] = abs_tool.replace(" ", "")
+            for line in code:
+                concrete_line: str = line.replace(functions[abs_tool], matches[abs_tool])
+            
+    def __match_group_to_func(self, code: str, grouping: list[RegisteredTool]):
+        """
+        Matches tools from each group to codes.
+        """
+        
+        for tool in grouping:
+            pass    
+            
+            
     
     def old_match_code(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict):
         """

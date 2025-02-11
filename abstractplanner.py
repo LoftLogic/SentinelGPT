@@ -12,19 +12,7 @@ from langchain.prompts.chat import (
 )
 
 from prompts.abstract_templates import generate_abstract_tool_template, generate_abstract_plan_template
-from parsers import parse_python_code_from_text
-
-"""
-Expiremental- this class is to be tested/demoed before being implemented
-It is not intended to be used (yet) when the user specifies a specific tool (e.g 'Use outlook to send an email')
-
-Ideation:
-    - User query possesses a task that needs a tool to do something (e.g a tool to read an email)
-    - AbstractPlanner does not have access to any other tools (tool-blind)
-    - Abstract planner develops a abstract app, including name (not important), description (very important), and signature (in/out types)
-        - The abstract app is in the form of a list of JSON objects
-    - The abstract planner will then create an abstract plan (Evan Rose and Tushin will do this part)
-"""
+# from parsers import parse_python_code_from_text
 
 
 class AbstractPlanner():

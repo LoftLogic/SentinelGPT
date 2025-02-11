@@ -44,13 +44,13 @@ class ConcretePlanner():
         
         self.plangen_chain = self.planner_template | self.planner_llm | self.planner_parser
 
-    def adapt_plan(self, tool_grouping: dict[str, set[RegisteredTool]], abs_tools: list[dict], abs_plan: ast.Module):
+    def adapt_plan(self, tool_grouping: dict[str, set[RegisteredTool]], abs_tools: list[dict], abs_code: str):
         """
         Adapts an abstract plan, creating a concrete executable equivelent
         Starts by matching each abstract developed tool with an existing concrete tool
         Then reformats the abstract plan to use the selected concrete tools
         """
-        matches: dict = {}
+        matches: dict[str, dict[str, list[RegisteredTool]]] = {}
         print("Abstract Tool Param:", abs_tools)
         for abs_tool in abs_tools:
             selected_tools = self.__match_tool(tool_grouping, abs_tool) # Return value/type of __match_tool() currently unknown        
@@ -111,7 +111,7 @@ class ConcretePlanner():
             
             if self.debug:
                 print(f"Results for {group}:")
-            best: float = float('inf')
+            best = float('inf')
             for doc, score in retrieved_docs_with_scores:
                 tool = list(tool_index_mapping.keys())[doc.metadata['index']]
                 best = min(score, best)
@@ -134,10 +134,19 @@ class ConcretePlanner():
                 
         return matches
                     
-            
+    
+    def __match_func(self, code: str, matches: dict[str, dict[str, RegisteredTool]]):
+        code: list[str] = code.splitlines()
+        # Map abs tool function name to abs tool name
+        functions: dict[str, str] = {}
+        for abs_tool in matches:
+            functions[abs_tool.replace(" ", "")] = abs_tool
+        pass
+    
     def old_match_code(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict):
         """
-        This is the older version of our match code. Does not display the simaliarities after execution.
+        This is the older version of our match code. Does not display the simaliarities after execution. 
+        Not currently used anywhere
         
         Matches abstract tools to concrete tools
         

@@ -36,10 +36,11 @@ class ConcretePlanner():
             - This would avoid more attack surfaces
     """
     
-    def __init__(self):
+    def __init__(self, debug: bool= True):
         self.planner_llm: ChatOpenAI = ChatOpenAI(model="gpt-4o", temperature=0.0)
         self.planner_template: ChatPromptTemplate = generate_concrete_template() # We may end up not using this
         self.planner_parser = JsonOutputParser()
+        self.debug = debug
         
         self.plangen_chain = self.planner_template | self.planner_llm | self.planner_parser
 
@@ -49,12 +50,95 @@ class ConcretePlanner():
         Starts by matching each abstract developed tool with an existing concrete tool
         Then reformats the abstract plan to use the selected concrete tools
         """
+        matches: dict = {}
+        print("Abstract Tool Param:", abs_tools)
         for abs_tool in abs_tools:
-            selected_tools = self.__match_tool(tool_grouping, abs_tool) # Return value/type of __match_tool() currently unknown
-
+            selected_tools = self.__match_tool(tool_grouping, abs_tool) # Return value/type of __match_tool() currently unknown        
+            matches[abs_tool['name']] = selected_tools
+                
+        if self.debug:
+            for abs_name in matches:
+                print(f"Matched tools for {abs_name}:\n")
+                for group, tools in matches[abs_name].items():
+                    if len(tools) == 1:
+                        print(group + ":", tools[0].get_name())
+                    else:
+                        print(group, list(map(lambda t: t.get_name(), tools)), sep=":")
+                print("\n")
     
-    def __match_tool(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict):
+    def __match_tool(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict) -> dict[str, list[RegisteredTool]]:
         """
+        Matches abstract tools to concrete tools
+        
+        params:
+            tool_grouping - map from provider to tools
+        Note: An abstract tool has: name, description, input, output,
+        
+        return:
+            A mapping of the group to its matched tool(s), in order from most to least simaliar
+            In this current implementation, it will usually be only one tool that gets matched
+        """
+        if "description" not in abstract_tool:
+            raise ValueError("Abstract Tool has no description")
+        
+        # NOTE: Lift to orchestrator later
+        embeddings = OpenAIEmbeddings()
+    
+        if self.debug and "name" in abstract_tool:
+            print("\n-------------------------")
+            print("Matching: " + abstract_tool["name"])
+            print("-------------------------\n")
+
+        matches: dict[str, list[RegisteredTool]] = {}
+        
+        # NOTE: We need to implement a different type of selection for 'Unaffiliated'
+        for group in tool_grouping:
+            names: dict = {}
+            for tool in tool_grouping[group]:
+                names[tool.get_name()] = tool
+            
+            
+            docs = []
+            tool_index_mapping = { tool: idx for idx, tool in enumerate(tool_grouping[group]) }
+            
+            for tool in tool_grouping[group]:
+                index = tool_index_mapping.get(tool)
+                docs.append(Document(page_content=(tool.get_name() + ": " + tool.get_description()), metadata={"index": index}))
+            
+            faiss_store = FAISS.from_documents(docs, embeddings)
+            
+            retrieved_docs_with_scores = faiss_store.similarity_search_with_score(abstract_tool["name"] + ": " + abstract_tool["description"])
+            
+            if self.debug:
+                print(f"Results for {group}:")
+            best: float = float('inf')
+            for doc, score in retrieved_docs_with_scores:
+                tool = list(tool_index_mapping.keys())[doc.metadata['index']]
+                best = min(score, best)
+                if self.debug:
+                    print(f"Tool: {tool.get_name()}, Similarity Score: {score:.4f}")
+
+            # NOTE: This part is experimental
+            # Choose tool(s) to match
+            chosen_tools = list(filter(lambda item: len(item) > 1 and item[1] < 0.4 and abs(item[1] - best) < 0.04, retrieved_docs_with_scores))
+            if self.debug:
+                if not chosen_tools:
+                    print("No tools chosen.")
+                elif len(chosen_tools) == 1:
+                    print(f"Chosen tool: {chosen_tools[0]}")
+                else:
+                    print(f"Chosen tools: {chosen_tools}")
+                print("\n")
+            for pair in chosen_tools:
+                matches[group] = matches.get(group, []) + [names[pair[0].page_content.split(":")[0]]]
+                
+        return matches
+                    
+            
+    def old_match_code(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict):
+        """
+        This is the older version of our match code. Does not display the simaliarities after execution.
+        
         Matches abstract tools to concrete tools
         
         params:
@@ -81,3 +165,5 @@ class ConcretePlanner():
             print(f"Results for {group}:")
             for doc in retrieved_docs:
                 print((list(tool_index_mapping.keys())[doc.metadata['index']]).get_name())
+
+        

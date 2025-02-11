@@ -1,49 +1,218 @@
-Abstract Planner
+--------------------------------
+Workspace tool Test Run #1:
+--------------------------------
 
-Query: I would like to order some mexican food for delivery online
-Plan:
-{'steps': 
-    [
-        {'name': 'Mexican Food Ordering Tool',
-            'description': 'A tool that helps users place orders for Mexican food online for delivery',
-            'inputs': {'Food Item': 
-                            {
-                                'type': 'string', 'description': 'The name of the Mexican food item to order'},
-                                'Location': 
-                                    {
-                                        'type': 'string',
-                                        'description': 'Delivery location'
-                                    }
-                                },
-                            'output': {
-                                'type': 'string', 
-                                'description': 'A confirmation of the order being placed'
-                                }
-                            }
-                        ]
-                    }
+Query: I would like to summarize the document named "Findings", the graph named "Analysis", and the slideshow "Results" and send the summaries to johndoe@gmail.com
 
-Query: I would like to get the latest news reports on Cybersecurity, then use gmail to send the reports to my friend johndoe@gmail.com
+Abstract Plan:
+Abstract tool signatures:
 
-Plan:
-Step: 1 
+Tool 1
+Name: Document Summarizer
+Description: A tool that summarizes the content of a document
+Inputs: {'Document Name': {'type': 'string', 'description': 'The name of the document to summarize'}}
+Output: string- A summary of the document
 
-NAME: 
-News Fetcher
-DESCRIPTION: 
-A tool that fetches the latest news reports on a specified topic
-INPUTS: 
-{'Topic': {'type': 'string', 'description': 'The topic to fetch news reports on'}}
-OUTPUT: 
-{'type': 'list of strings', 'description': 'A list of the latest news reports on the specified topic'}
-Step: 1 
 
-NAME: 
-Email Sender
-DESCRIPTION: 
-A tool that sends an email with specified content to a given email address
-INPUTS: 
-{'Email Address': {'type': 'string', 'description': "The recipient's email address"}, 'Content': {'type': 'list of strings', 'description': 'The content to be sent in the email'}}
-OUTPUT: 
-{'type': 'string', 'description': 'A confirmation of the email being sent'}
-plan: {'steps': [{'name': 'News Fetcher', 'description': 'A tool that fetches the latest news reports on a specified topic', 'inputs': {'Topic': {'type': 'string', 'description': 'The topic to fetch news reports on'}}, 'output': {'type': 'list of strings', 'description': 'A list of the latest news reports on the specified topic'}}, {'name': 'Email Sender', 'description': 'A tool that sends an email with specified content to a given email address', 'inputs': {'Email Address': {'type': 'string', 'description': "The recipient's email address"}, 'Content': {'type': 'list of strings', 'description': 'The content to be sent in the email'}}, 'output': {'type': 'string', 'description': 'A confirmation of the email being sent'}}]}
+
+Tool 2
+Name: Graph Summarizer
+Description: A tool that summarizes the content of a graph
+Inputs: {'Graph Name': {'type': 'string', 'description': 'The name of the graph to summarize'}}
+Output: string- A summary of the graph
+
+
+
+Tool 3
+Name: Slideshow Summarizer
+Description: A tool that summarizes the content of a slideshow
+Inputs: {'Slideshow Name': {'type': 'string', 'description': 'The name of the slideshow to summarize'}}
+Output: string- A summary of the slideshow
+
+
+
+Tool 4
+Name: Email Sender
+Description: A tool that sends an email with the provided content
+Inputs: {'Email Address': {'type': 'string', 'description': 'The email address to send the content to'}, 'Content': {'type': 'string', 'description': 'The content to be sent in the email'}}
+Output: string- A confirmation of the email being sent
+
+
+Stripped code, pre-AST:
+ def main():
+    document_summary: str = DocumentSummarizer(Document_Name="Findings")
+    graph_summary: str = GraphSummarizer(Graph_Name="Analysis")
+    slideshow_summary: str = SlideshowSummarizer(Slideshow_Name="Results")
+    
+    combined_summary: str = f"Document Summary:\n{document_summary}\n\nGraph Summary:\n{graph_summary}\n\nSlideshow Summary:\n{slideshow_summary}"
+    
+    confirmation: str = EmailSender(Email_Address="johndoe@gmail.com", Content=combined_summary)
+    return confirmation
+
+
+AST Dump:
+ Module(
+    body=[
+        FunctionDef(
+            name='main',
+            args=arguments(
+                posonlyargs=[],
+                args=[],
+                kwonlyargs=[],
+                kw_defaults=[],
+                defaults=[]),
+            body=[
+                AnnAssign(
+                    target=Name(id='document_summary', ctx=Store()),
+                    annotation=Name(id='str', ctx=Load()),
+                    value=Call(
+                        func=Name(id='DocumentSummarizer', ctx=Load()),
+                        args=[],
+                        keywords=[
+                            keyword(
+                                arg='Document_Name',
+                                value=Constant(value='Findings'))]),
+                    simple=1),
+                AnnAssign(
+                    target=Name(id='graph_summary', ctx=Store()),
+                    annotation=Name(id='str', ctx=Load()),
+                    value=Call(
+                        func=Name(id='GraphSummarizer', ctx=Load()),
+                        args=[],
+                        keywords=[
+                            keyword(
+                                arg='Graph_Name',
+                                value=Constant(value='Analysis'))]),
+                    simple=1),
+                AnnAssign(
+                    target=Name(id='slideshow_summary', ctx=Store()),
+                    annotation=Name(id='str', ctx=Load()),
+                    value=Call(
+                        func=Name(id='SlideshowSummarizer', ctx=Load()),
+                        args=[],
+                        keywords=[
+                            keyword(
+                                arg='Slideshow_Name',
+                                value=Constant(value='Results'))]),
+                    simple=1),
+                AnnAssign(
+                    target=Name(id='combined_summary', ctx=Store()),
+                    annotation=Name(id='str', ctx=Load()),
+                    value=JoinedStr(
+                        values=[
+                            Constant(value='Document Summary:\n'),
+                            FormattedValue(
+                                value=Name(id='document_summary', ctx=Load()),
+                                conversion=-1),
+                            Constant(value='\n\nGraph Summary:\n'),
+                            FormattedValue(
+                                value=Name(id='graph_summary', ctx=Load()),
+                                conversion=-1),
+                            Constant(value='\n\nSlideshow Summary:\n'),
+                            FormattedValue(
+                                value=Name(id='slideshow_summary', ctx=Load()),
+                                conversion=-1)]),
+                    simple=1),
+                AnnAssign(
+                    target=Name(id='confirmation', ctx=Store()),
+                    annotation=Name(id='str', ctx=Load()),
+                    value=Call(
+                        func=Name(id='EmailSender', ctx=Load()),
+                        args=[],
+                        keywords=[
+                            keyword(
+                                arg='Email_Address',
+                                value=Constant(value='johndoe@gmail.com')),
+                            keyword(
+                                arg='Content',
+                                value=Name(id='combined_summary', ctx=Load()))]),
+                    simple=1),
+                Return(
+                    value=Name(id='confirmation', ctx=Load()))],
+            decorator_list=[])],
+    type_ignores=[])
+
+
+-------------------------
+Matching: Document Summarizer
+-------------------------
+
+Results for PastryEmpire:
+Tool: Donut Shopper, Similarity Score: 0.4945
+Tool: Pastry Shopper, Similarity Score: 0.5393
+Results for Unaffiliated:
+Tool: MyDonutDelivery, Similarity Score: 0.5397
+Tool: Restuarant Booker, Similarity Score: 0.5456
+Results for Microsoft Office:
+Tool: Word, Similarity Score: 0.2464
+Tool: Excel, Similarity Score: 0.3232
+Tool: Powerpoint, Similarity Score: 0.3397
+Tool: Outlook, Similarity Score: 0.5319
+Results for Google Drive:
+Tool: Docs, Similarity Score: 0.2809
+Tool: Slides, Similarity Score: 0.3349
+Tool: Sheets, Similarity Score: 0.3451
+Tool: Gmail, Similarity Score: 0.5115
+
+-------------------------
+Matching: Graph Summarizer
+-------------------------
+
+Results for PastryEmpire:
+Tool: Donut Shopper, Similarity Score: 0.5059
+Tool: Pastry Shopper, Similarity Score: 0.5508
+Results for Unaffiliated:
+Tool: Restuarant Booker, Similarity Score: 0.5623
+Tool: MyDonutDelivery, Similarity Score: 0.5652
+Results for Microsoft Office:
+Tool: Excel, Similarity Score: 0.3668
+Tool: Word, Similarity Score: 0.3686
+Tool: Powerpoint, Similarity Score: 0.3873
+Tool: Outlook, Similarity Score: 0.5829
+Results for Google Drive:
+Tool: Sheets, Similarity Score: 0.3027
+Tool: Slides, Similarity Score: 0.3765
+Tool: Docs, Similarity Score: 0.3931
+Tool: Gmail, Similarity Score: 0.5393
+
+-------------------------
+Matching: Slideshow Summarizer
+-------------------------
+
+Results for PastryEmpire:
+Tool: Donut Shopper, Similarity Score: 0.4866
+Tool: Pastry Shopper, Similarity Score: 0.5159
+Results for Unaffiliated:
+Tool: MyDonutDelivery, Similarity Score: 0.5390
+Tool: Restuarant Booker, Similarity Score: 0.5487
+Results for Microsoft Office:
+Tool: Powerpoint, Similarity Score: 0.2862
+Tool: Excel, Similarity Score: 0.3591
+Tool: Word, Similarity Score: 0.3683
+Tool: Outlook, Similarity Score: 0.5428
+Results for Google Drive:
+Tool: Slides, Similarity Score: 0.2353
+Tool: Sheets, Similarity Score: 0.3635
+Tool: Docs, Similarity Score: 0.3917
+Tool: Gmail, Similarity Score: 0.5209
+
+-------------------------
+Matching: Email Sender
+-------------------------
+
+Results for PastryEmpire:
+Tool: Donut Shopper, Similarity Score: 0.4501
+Tool: Pastry Shopper, Similarity Score: 0.5078
+Results for Unaffiliated:
+Tool: MyDonutDelivery, Similarity Score: 0.4880
+Tool: Restuarant Booker, Similarity Score: 0.5527
+Results for Microsoft Office:
+Tool: Outlook, Similarity Score: 0.3288
+Tool: Word, Similarity Score: 0.4967
+Tool: Excel, Similarity Score: 0.5207
+Tool: Powerpoint, Similarity Score: 0.5277
+Results for Google Drive:
+Tool: Gmail, Similarity Score: 0.3325
+Tool: Slides, Similarity Score: 0.4940
+Tool: Docs, Similarity Score: 0.5099
+Tool: Sheets, Similarity Score: 0.5252

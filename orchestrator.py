@@ -6,7 +6,6 @@ from concreteplanner import ConcretePlanner
 
 from langchain_openai import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
-from astpretty import pprint
 
 from parsers import parse_ai_message_to_ast
 
@@ -21,7 +20,7 @@ class Orchestrator:
         # Map from app names to the RegisteredApp
         self.tools: set[RegisteredTool] = set()
         self.tool_blind_planner: AbstractPlanner = AbstractPlanner()
-        self.concrete_planner: ConcretePlanner = ConcretePlanner()
+        self.concrete_planner: ConcretePlanner = ConcretePlanner(debug)
         self.tool_selector: ToolSelector = ToolSelector()
         self.debug = debug
         self.llm: ChatOpenAI = ChatOpenAI(model='gpt-4o', temperature=0.0)
@@ -103,31 +102,40 @@ class Orchestrator:
 
         Returns:
             A mapping of providers to its corresponding set of tool names
+        NOTE: This method does not really work that well and is currently not implemented properly
         """        
         if self.debug:
             print("Filtering and grouping tools...\n\n")
         
         similarities: dict[RegisteredTool, float] = self.tool_selector.get_similarities(query, self.tools)
         
+        """
         if self.debug:
             print("\nSimilarity scores: \n")
             for tool, score in similarities.items():
                 print(f"{tool.get_name()} has a simaliarity of {score}")
+        """
+        
+        # NOTE: Threshold set to super low for testing purposes
+        tools: set[RegisteredTool] = self.tool_selector.filter_tools(similarities, threshold=0.5)
 
-        tools: set[RegisteredTool] = self.tool_selector.filter_tools(similarities)
-
+        """
         if self.debug:
             print("\nSelected Tools:")
             for tool in tools:
                 print(tool.get_name())
+        """
 
         grouping: dict[str, set[RegisteredTool]] = self.tool_selector.group_tools(tools)
+        
+        """        
         if self.debug:
             for provider in grouping:
                 print(f"Tools in {provider}:")
                 for tool in grouping[provider]:
                     print(tool.get_name())
                 print("\n")
+        """
         return grouping
 
     def __planning_step(self, query: str, grouping: dict[str, set[RegisteredTool]]):

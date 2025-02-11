@@ -55,7 +55,7 @@ def add_workspace_utility_suite(orchestrator: Orchestrator):
     ).add_tool(
         RegisteredTool("Word", read_document, "Word allows users to use AI to read and summarize their documents in Microsoft Word", "Microsoft Office")
     ).add_tool(
-        RegisteredTool("Excel", read_graph, "Excel allows users to use AI to read and summarize their sheets in Microsoft Excel", "Microsoft Office")
+        RegisteredTool("Excel", read_graph, "Excel allows users to use AI to read and summarize their graphs in Microsoft Excel", "Microsoft Office")
     ).add_tool(
         RegisteredTool("Powerpoint", read_slides, "Powerpoint allows users to use AI to read and summarize their slideshows in Microsoft Powerpoint", "Microsoft Office")
     )

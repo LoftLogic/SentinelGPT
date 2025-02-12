@@ -13,16 +13,25 @@ def foo(x) -> str:
     str(x)
 
 def send_email(reciever_address: str, subject: str, email_txt: str):
-    pass
+    return f"Sent the email with subject {subject} to {reciever_address} with content:\n{email_txt}"
 
 def read_document(document_name: str):
-    pass
+    if document_name == "Findings":
+        return "There were 15 robberies in the last year"
+    else:
+        return "Sorry, the document could not be found"
 
 def read_graph(graph_name: str):
-    pass
+    if graph_name == "Analysis":
+        return "There was a 10 percent decrease in robberies last year"
+    else:
+        return "Sorry, the graph could not be found"
 
 def read_slides(slides_name: str):
-    pass
+    if slides_name == "Results":
+        return "We succesfully decreased 10 percent of robberies with our new outreach program"
+    else:
+        return "Sorry, the slideshow could not be found"
 
 def summarize(text: str):
     pass

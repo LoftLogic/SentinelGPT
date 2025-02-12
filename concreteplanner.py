@@ -63,9 +63,10 @@ class ConcretePlanner():
                     else:
                         print(group, list(map(lambda t: t.get_name(), tools)), sep=":")
                 print("\n")
-        
+        last_grouping: set[str] = set()
         codes: list[str] = []
-        for group in tool_grouping:
+        for key in matches:
+            matched_tools: set[str] = set(matches[key].keys())
             try:
                 code = self.__match_func(abs_code, matches, group)
                 print(f"Code for {group}:\n", code)
@@ -180,7 +181,9 @@ class ConcretePlanner():
                 conc_tool = matches[abs_tool_name][group][0]
                 print("Concrete tool", conc_tool.get_name())
                 new_code += line.replace(found, conc_tool.get_func().__name__) + "\n"
-                
+            else:
+                new_code += line + "\n"
+            
         return new_code
         
     def old_match_code(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict):

@@ -7,8 +7,7 @@ from concreteplanner import ConcretePlanner
 from langchain_openai import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 
-from parsers import parse_ai_message_to_ast, parse_python_code_to_ast
-
+from parsers import *
 
 class Orchestrator:
     """
@@ -149,7 +148,7 @@ class Orchestrator:
             - A sequential plan of execution for the apps
         """
 
-        abstract_tools = self.tool_blind_planner.generate_abstract_tools(query)
+        abstract_tools: dict[list] = self.tool_blind_planner.generate_abstract_tools(query)
         if self.debug:
             print("Generating a plan of execution... \n\n")
             print("Abstract tool signatures:\n")
@@ -167,8 +166,7 @@ class Orchestrator:
             else:
                 print(abstract_tools)
         plan = self.tool_blind_planner.generate_abstract_plan(query, abstract_tools)
-        code = parse_python_code_to_ast(plan)
-        # plan = parse_ai_message_to_ast(plan)
+        code = parse_text_to_python(plan)
         self.concrete_planner.adapt_plan(grouping, abstract_tools['apps'], code)        
         return plan
 

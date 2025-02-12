@@ -12,6 +12,10 @@ from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain.schema import Document
 
+from typing import Callable
+
+import inspect
+
 """
 Expiremental
 
@@ -63,17 +67,33 @@ class ConcretePlanner():
                     else:
                         print(group, list(map(lambda t: t.get_name(), tools)), sep=":")
                 print("\n")
+                
         last_grouping: set[str] = set()
-        codes: list[str] = []
+        codes: dict[str, list[str]] = {}
+        
         for key in matches:
             matched_tools: set[str] = set(matches[key].keys())
-            try:
-                code = self.__match_func(abs_code, matches, group)
-                print(f"Code for {group}:\n", code)
-                codes.append(code)
-            except:
-                print("No tools found for:", group)
+            if matched_tools == last_grouping:
+                continue
+            last_grouping = matched_tools
+            for group in last_grouping:
+                try:
+                    code = self.__match_func(abs_code, matches, group)
+                    codes[group] = code
+                    if self.debug:
+                        print(f"Code for {group}:\n", code)
+                except Exception as e:
+                    print("No tools found for:", group, " \nError:", str(e))
         
+        for group in codes:
+            exec_scope = {}
+            exec(codes[group], exec_scope)
+            if "main" in exec_scope:
+                result = exec_scope["main"]()
+                if self.debug: print(f"RESULTS FOR {group}:\n", result)
+            else:
+                if self.debug: print(f"Results for {group} NOT FOUND")
+            if self.debug: print("\n")
     
     def __match_tool(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict) -> dict[str, list[RegisteredTool]]:
         """
@@ -149,6 +169,7 @@ class ConcretePlanner():
         Returns:
             The code with concrete functions in place of abstract
         """
+        print("MATCH FUNC")
         def find_keyword(text: str, keywords: set[str]) -> str | None:
             """
             Searches for keywords in the given text.
@@ -167,9 +188,10 @@ class ConcretePlanner():
         for abs_tool in matches:
             function_map[abs_tool.replace(" ", "")] = abs_tool
         functions: set[str] = set(function_map.keys())
+        used_functions: set[Callable] = set()
         code: list[str] = code.splitlines()
         new_code: str = ""
-
+        conc_tool: RegisteredTool = None
         for line in code:
             found: str | None = find_keyword(line, functions)
             if found:
@@ -179,11 +201,12 @@ class ConcretePlanner():
                 
                 # For now, we are going to assume each group has one matched tool
                 conc_tool = matches[abs_tool_name][group][0]
-                print("Concrete tool", conc_tool.get_name())
                 new_code += line.replace(found, conc_tool.get_func().__name__) + "\n"
             else:
                 new_code += line + "\n"
-            
+            if conc_tool and conc_tool.get_func() not in used_functions:
+                used_functions.add(conc_tool.get_func())
+                new_code = inspect.getsource(conc_tool.get_func()) + "\n" + new_code
         return new_code
         
     def old_match_code(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict):

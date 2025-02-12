@@ -24,5 +24,5 @@ def run_interface(debug: bool):
         print(orchestrator.run_query(prompt))
         
 """
-I would like to summarize the document named "Findings", the graph named "Analysis", and the slideshow "Results" and send the summaries to johndoe@gmail.com
+I would like to summarize the document named "Findings", the graph named "Analysis", and the slideshow "Results" and send the summaries to johndoe@northeastern.edu
 """

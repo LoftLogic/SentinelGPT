@@ -12,8 +12,19 @@ class RegisteredTool():
         self.tool: StructuredTool = StructuredTool.from_function(name=name, func=func, description=description)
         self.provider: str = provider
         self.clearence: Clearence = clearance
-        self.inputs: list[dict] = inputs if inputs else []
-        self.output: dict = output if output else {}
+        if not inputs:
+            self.inputs = []
+        else:
+            for input in inputs:
+                if not "type" in input or not "description" in input:
+                    raise ValueError("Inputs must each have a type and description")
+            self.inputs: list[dict] = inputs
+        if not output:
+            self.output = {}
+        else:
+            if not "type" in output or not "description" in output:
+                raise ValueError("Output must be a dict with type and description")
+            self.output: dict = output
     
     """
     Returns the name of the field.

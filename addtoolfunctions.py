@@ -90,7 +90,16 @@ def add_weaker_google_suite(orchestrator: Orchestrator):
     """
     
     orchestrator.add_tool(gmail).add_tool(
-        RegisteredTool("Docs", read_document, "Docs allows users to retrieve a google document from their drive account", "Google Drive")
+        RegisteredTool("Docs", read_doc, "Docs allows users to retrieve a google document from their drive account", "Google Drive")
     ).add_tool(sheets).add_tool(slides).add_tool(
         RegisteredTool("Summarizer", summarize, "Summarizer allows users to summarize a body of pure text.", "Google Drive")
     )
+    
+    
+    
+    
+def add_healthcare_suite(orchestrator: Orchestrator):
+    """
+    Adds healthcare tools
+    """
+    pass

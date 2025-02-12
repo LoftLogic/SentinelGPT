@@ -37,7 +37,7 @@ class Orchestrator:
         """
         self.tools.add(tool)
         if (self.debug):
-            print(f"{tool.get_name()} added")
+            print(f"{tool.get_name()} added to {tool.provider}")
         return self
 
     def remove_tool(self, tool: RegisteredTool):

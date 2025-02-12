@@ -27,10 +27,10 @@ def read_slides(slides_name: str):
 def summarize(text: str):
     pass
 
+restuarant_booker = RegisteredTool("Restuarant Booker", foo, "Restuarant booker allows for booking restaurants online")
 donut_delivery = RegisteredTool("MyDonutDelivery", foo, "MyDonutDelivery allows users to buy donuts online and have them delivered to their house")
 pastry_shopper = RegisteredTool("Pastry Shopper", foo, "Pastry Shopper allows the user to buy pastries for delivery online", "PastryEmpire")
 donut_shopper = RegisteredTool("Donut Shopper", foo, "Donut Shopper is a tool to purchase and deliver donuts online", "PastryEmpire")
-restuarant_booker = RegisteredTool("Restuarant Booker", foo, "Restuarant booker allows for booking restaurants online")
 gmail = RegisteredTool("Gmail", send_email, "Gmail allows users to send emails through google mail", "Google Drive")
 docs = RegisteredTool("Docs", read_document, "Docs allows users to use AI to read and summarize their documents in Google Drive", "Google Drive")
 sheets = RegisteredTool("Sheets", read_graph, "Sheets allows users to use AI to read and summarize their graphs from Google Sheets", "Google Drive")

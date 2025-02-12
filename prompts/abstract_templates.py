@@ -17,7 +17,7 @@ def generate_abstract_plan_template() -> ChatPromptTemplate:
         
         Generated Output:
             def main():
-                poem: str = PoemGenerator(theme="nature")
+                poem: str = PoemGenerator("nature")
                 result = poem.count('r')
                 return result
                    
@@ -33,9 +33,9 @@ def generate_abstract_plan_template() -> ChatPromptTemplate:
                    
         Generated Output:
             def main():
-                news: str = NewsSummarizer(topic="AI")
+                news: str = NewsSummarizer("AI")
                 email_addr: str = UserInput()
-                conf: str = EmailSender(email_address=email_addr, content=news)
+                conf: str = EmailSender(email_addr, news)
     """)
 
     shot_3: str = ("""
@@ -52,7 +52,7 @@ def generate_abstract_plan_template() -> ChatPromptTemplate:
                 emails = []
                 for app in email_apps:
                     emails.extend(app())
-                summary: str = EmailSummarizer(emails=emails)
+                summary: str = EmailSummarizer(emails)
                 return summary
     """)
 

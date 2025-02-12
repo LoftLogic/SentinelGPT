@@ -6,7 +6,7 @@ def run_interface(debug: bool):
     orchestrator: Orchestrator = Orchestrator()
     # add_food_delivery_suite(orchestrator)
     # add_workspace_utility_suite(orchestrator)
-    add_weaker_google_suite(orchestrator)
+    add_workspace_utility_suite(orchestrator)
     if debug:
         print("Running in Debug Mode... \n")
     else:
@@ -24,5 +24,5 @@ def run_interface(debug: bool):
         print(orchestrator.run_query(prompt))
         
 """
-My Queries: I would like to summarize the document named "Findings", the graph named "Analysis", and the slideshow "Results" and send the summaries to johndoe@gmail.com
+I would like to summarize the document named "Findings", the graph named "Analysis", and the slideshow "Results" and send the summaries to johndoe@gmail.com
 """

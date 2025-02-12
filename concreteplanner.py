@@ -134,20 +134,76 @@ class ConcretePlanner():
         return matches
                     
     
-    def __match_func(self, code: str, matches: dict[str, dict[str, list[RegisteredTool]]]):
+    def __match_func(self, code: str, matches: dict[str, dict[str, list[RegisteredTool]]], group):
         """
         Matches functions for each group
         
+        Example code:
+        def main():
+            document_summary: str = DocumentSummarizer(Document_Name="Findings")
+            graph_summary: str = GraphSummarizer(Graph_Name="Analysis")
+            slideshow_summary: str = SlideshowSummarizer(Slideshow_Name="Results")
+            
+            combined_summary: str = f"Document Summary:\n{document_summary}\n\nGraph Summary:\n{graph_summary}\n\nSlideshow Summary:\n{slideshow_summary}"
+            
+            confirmation: str = EmailSender(Email_Address="johndoe@gmail.com", Content=combined_summary)
+            return confirmation
+        
+        Example matches:
+            {'Document Summarizer': 
+                {'Google Drive': [<registeredtool.RegisteredTool object at 0x7f724eb9f850>], 
+                'Microsoft Office': [<registeredtool.RegisteredTool object at 0x7f724eb9eb60>]}, 
+            'Graph Summarizer': 
+                {'Google Drive': [<registeredtool.RegisteredTool object at 0x7f724eb9fd60>], 
+                'Microsoft Office': [<registeredtool.RegisteredTool object at 0x7f724eb9f070>]}, 
+            'Slideshow Summarizer': 
+                {'Google Drive': [<registeredtool.RegisteredTool object at 0x7f724eb9ee30>], 
+                'Microsoft Office': [<registeredtool.RegisteredTool object at 0x7f724eb9f340>]}, 
+            'Email Sender': 
+                {'Google Drive': [<registeredtool.RegisteredTool object at 0x7f724eb9fe50>], 
+                'Microsoft Office': [<registeredtool.RegisteredTool object at 0x7f724eb9f910>]}}
+        
+        Process:
+            Map abs functions to their tool names
+            Split the code into lines
+            Go through each line, then look for abs functions
+            When an abs function is found, get the corresponding concrete tool from matches
+        
         TO BE IMPLEMENTED
         """
-        code: list[str] = code.splitlines()
-        # Map abstract tool name to its function name
-        functions: dict[str, str] = {}
-        for abs_tool in matches:
-            functions[abs_tool] = abs_tool.replace(" ", "")
-            for line in code:
-                concrete_line: str = line.replace(functions[abs_tool], matches[abs_tool])
+        def find_keyword(text: str, keywords: set[str]) -> str | None:
+            """
+            Searches for keywords in the given text.
             
+            :param text: The string to search within.
+            :param keywords: A set of keywords to look for.
+            :return: The first keyword found or None if none are found.
+            """
+            for word in keywords:
+                if word in text:
+                    return word
+            return None 
+         
+        # Map abstract tool's function name to its tool
+        function_map: dict[str, str] = {}
+        functions: set[str] = set(function_map.keys())
+        for abs_tool in matches:
+            function_map[abs_tool.replace(" ", "")] = abs_tool
+        
+        code: list[str] = code.splitlines()
+
+        for line in code:
+            found: str | None = find_keyword(line, functions)
+            if found:
+                abs_tool_name = function_map[found]
+                if abs_tool_name not in matches or group not in matches:
+                    raise ValueError("Abs tool not found in matches")
+                # For now, we are going to assume each group has one matched tool
+                conc_tool = matches[abs_tool_name][group][0]
+                line.replace(found, conc_tool.get_name)        
+                
+        print("New code", str(code))    
+        
     def old_match_code(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict):
         """
         This is the older version of our match code. Does not display the simaliarities after execution. 

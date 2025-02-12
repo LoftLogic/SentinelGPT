@@ -22,3 +22,7 @@ def run_interface(debug: bool):
         if prompt.lower() == ":q":
             break
         print(orchestrator.run_query(prompt))
+        
+"""
+My Queries: I would like to summarize the document named "Findings", the graph named "Analysis", and the slideshow "Results" and send the summaries to johndoe@gmail.com
+"""

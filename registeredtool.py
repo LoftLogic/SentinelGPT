@@ -7,11 +7,12 @@ class RegisteredTool():
     Composes with StructuredTool
     State also includes clearance level and tool provider
     """
-    def __init__(self, name: str, func, description: str, provider: str = "Unaffiliated", clearance: Clearence = Clearence.LOW):
-        self.tool = StructuredTool.from_function(name=name, func=func, description=description)
-        self.provider = provider
-        self.clearence = clearance
-    
+    def __init__(self, name: str, func, description: str, inputs: list[dict] = None, output: dict = None, provider: str = "Unaffiliated", clearance: Clearence = Clearence.LOW):
+        self.tool: StructuredTool = StructuredTool.from_function(name=name, func=func, description=description)
+        self.provider: str = provider
+        self.clearence: Clearence = clearance
+        self.inputs: list[dict] = inputs if inputs else []
+        self.output: dict = output if output else {}
     
     """
     Returns the name of the field.

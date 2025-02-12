@@ -12,9 +12,6 @@ from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain.schema import Document
 
-import ast
-
-
 """
 Expiremental
 
@@ -36,7 +33,7 @@ class ConcretePlanner():
             - This would avoid more attack surfaces
     """
     
-    def __init__(self, debug: bool= True):
+    def __init__(self, debug: bool = True):
         self.planner_llm: ChatOpenAI = ChatOpenAI(model="gpt-4o", temperature=0.0)
         self.planner_template: ChatPromptTemplate = generate_concrete_template() # We may end up not using this
         self.planner_parser = JsonOutputParser()
@@ -57,6 +54,7 @@ class ConcretePlanner():
             matches[abs_tool['name']] = selected_tools
                 
         if self.debug:
+            print("Match pure JSON:", str(matches))
             for abs_name in matches:
                 print(f"Matched tools for {abs_name}:\n")
                 for group, tools in matches[abs_name].items():
@@ -64,7 +62,9 @@ class ConcretePlanner():
                         print(group + ":", tools[0].get_name())
                     else:
                         print(group, list(map(lambda t: t.get_name(), tools)), sep=":")
-                print("\n")
+                print("\n")            
+    
+    
     
     def __match_tool(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict) -> dict[str, list[RegisteredTool]]:
         """
@@ -111,6 +111,7 @@ class ConcretePlanner():
             
             if self.debug:
                 print(f"Results for {group}:")
+                
             best = float('inf')
             for doc, score in retrieved_docs_with_scores:
                 tool = list(tool_index_mapping.keys())[doc.metadata['index']]
@@ -118,9 +119,7 @@ class ConcretePlanner():
                 if self.debug:
                     print(f"Tool: {tool.get_name()}, Similarity Score: {score:.4f}")
 
-            # NOTE: This part is experimental
-            # Choose tool(s) to match
-            chosen_tools = list(filter(lambda item: len(item) > 1 and item[1] < 0.4 and abs(item[1] - best) < 0.04, retrieved_docs_with_scores))
+            chosen_tools = list(filter(lambda item: len(item) > 1 and item[1] < 0.4 and abs(item[1] - best) < 0.03, retrieved_docs_with_scores))
             if self.debug:
                 if not chosen_tools:
                     print("No tools chosen.")
@@ -138,6 +137,8 @@ class ConcretePlanner():
     def __match_func(self, code: str, matches: dict[str, dict[str, list[RegisteredTool]]]):
         """
         Matches functions for each group
+        
+        TO BE IMPLEMENTED
         """
         code: list[str] = code.splitlines()
         # Map abstract tool name to its function name
@@ -147,16 +148,6 @@ class ConcretePlanner():
             for line in code:
                 concrete_line: str = line.replace(functions[abs_tool], matches[abs_tool])
             
-    def __match_group_to_func(self, code: str, grouping: list[RegisteredTool]):
-        """
-        Matches tools from each group to codes.
-        """
-        
-        for tool in grouping:
-            pass    
-            
-            
-    
     def old_match_code(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict):
         """
         This is the older version of our match code. Does not display the simaliarities after execution. 
@@ -188,5 +179,3 @@ class ConcretePlanner():
             print(f"Results for {group}:")
             for doc in retrieved_docs:
                 print((list(tool_index_mapping.keys())[doc.metadata['index']]).get_name())
-
-        

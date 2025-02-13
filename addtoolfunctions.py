@@ -95,9 +95,6 @@ def add_weaker_google_suite(orchestrator: Orchestrator):
         RegisteredTool("Summarizer", summarize, "Summarizer allows users to summarize a body of pure text.", "Google Drive")
     )
     
-    
-    
-    
 def add_healthcare_suite(orchestrator: Orchestrator):
     """
     Adds healthcare tools

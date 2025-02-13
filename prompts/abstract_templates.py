@@ -13,7 +13,7 @@ def generate_abstract_plan_template() -> ChatPromptTemplate:
 
         User: Generate a poem and count the number of r's
         Auto-Generated Abstract apps:
-        {'apps': [{'name': 'PoemGenerator', 'description': 'A tool that generates a poem based on a given theme or prompt', 'inputs': {'theme': {'type': 'string', 'description': 'The theme or prompt for the poem'}}, 'output': {'type': 'string', 'description': 'The generated poem'}}]}
+        {'apps': [{'name': 'PoemGenerator', 'description': 'A tool that generates a poem based on a given theme or prompt', 'inputs': {'theme': {'type': 'str', 'description': 'The theme or prompt for the poem'}}, 'output': {'type': 'str', 'description': 'The generated poem'}}]}
         
         Generated Output:
             def main():
@@ -29,7 +29,7 @@ def generate_abstract_plan_template() -> ChatPromptTemplate:
         User input: Please summarize the latest news articles on the topic of AI and send the result in an email 
                    
         Auto-Generated Abstract apps:
-        {'apps': [{'name': 'NewsSummarizer', 'description': 'A tool that summarizes the latest news articles on a given topic', 'inputs': {'topic': {'type': 'string', 'description': 'The topic to summarize news about'}}, 'output': {'type': 'string', 'description': 'A summary of the latest news articles on the given topic'}}, {'name': 'EmailSender', 'description': 'A tool that sends an email with the provided content to a specified email address', 'inputs': {'email_address': {'type': 'string', 'description': 'The email address to send the content to'}, 'content': {'type': 'string', 'description': 'The content to be sent in the email'}}, 'output': {'type': 'string', 'description': 'A confirmation that the email has been sent'}}]}
+        {'apps': [{'name': 'NewsSummarizer', 'description': 'A tool that summarizes the latest news articles on a given topic', 'inputs': {'topic': {'type': 'str', 'description': 'The topic to summarize news about'}}, 'output': {'type': 'str', 'description': 'A summary of the latest news articles on the given topic'}}, {'name': 'EmailSender', 'description': 'A tool that sends an email with the provided content to a specified email address', 'inputs': {'email_address': {'type': 'str', 'description': 'The email address to send the content to'}, 'content': {'type': 'str', 'description': 'The content to be sent in the email'}}, 'output': {'type': 'str', 'description': 'A confirmation that the email has been sent'}}]}
                    
         Generated Output:
             def main():
@@ -44,7 +44,7 @@ def generate_abstract_plan_template() -> ChatPromptTemplate:
         User: Check all my email apps and summarize all unread emails
         
         Auto-Generated Abstract apps:
-        {'apps': [{'name': 'EmailRetriever', 'description': 'A tool that collects emails from an email application', 'inputs': {}, 'output': {'type': 'list[string]', 'description': 'A list of all emails collected from the specified email application'}}, {'name': 'EmailSummarizer', 'description': 'A tool that summarizes a list of emails', 'inputs': {'emails': {'type': 'list[string]', 'description': 'A list of emails to be summarized'}}, 'output': {'type': 'string', 'description': 'A summary of the provided emails'}}]}
+        {'apps': [{'name': 'EmailRetriever', 'description': 'A tool that collects emails from an email application', 'inputs': {}, 'output': {'type': 'list[str]', 'description': 'A list of all emails collected from the specified email application'}}, {'name': 'EmailSummarizer', 'description': 'A tool that summarizes a list of emails', 'inputs': {'emails': {'type': 'list[str]', 'description': 'A list of emails to be summarized'}}, 'output': {'type': 'str', 'description': 'A summary of the provided emails'}}]}
 
         Generated Output:
             def main():
@@ -159,11 +159,11 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
                     "description": "Temperature Checker is a tool that checks for the temperature of the current day at a certain location and time",
                     "inputs": {
                         "Time": {
-                            "type": "string",
+                            "type": "str",
                             "description": "Standard time to check temperature at"
                         }
                         "Location": {
-                            "type": "string",
+                            "type": "str",
                             "description": "Location (as a name) to check temperature at"
                         }
                     },
@@ -190,16 +190,16 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
                 "description": "A tool that helps users place pizza orders online for delivery",
                 "inputs": {
                     "Pizza Item": {
-                        "type": "string",
+                        "type": "str",
                         "description": "The name of the food item to order"
                     },
                     "Location": {
-                        "type": "string",
+                        "type": "str",
                         "description": "Delivery location"
                     }
                 },
                 "output": {
-                    "type": "string",
+                    "type": "str",
                     "description": "A confirmation of the order being placed"
                 }
             }
@@ -243,7 +243,7 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
         }}
         
         Data types that can be used are a primitive or a list of primitives
-        Primitives can be an integer, float, or string.
+        Primitives can be an integer, float, or str.
         
         Once you have completed your thought process, generate the structured JSON output 
         following this format:

@@ -87,7 +87,10 @@ class ConcretePlanner():
         
         for group in codes:
             exec_scope = {}
-            exec(codes[group], exec_scope)
+            try:
+                exec(codes[group], exec_scope)
+            except Exception as e:
+                print("Error: ", e)
             if "main" in exec_scope:
                 result = exec_scope["main"]()
                 if self.debug: print(f"RESULTS FOR {group}:\n", result)
@@ -97,58 +100,73 @@ class ConcretePlanner():
     
     def __match_tool(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict) -> dict[str, list[RegisteredTool]]:
         """
-        Matches abstract tools to concrete tools
+        Matches abstract tools to concrete tools.
         
-        params:
-            tool_grouping - map from provider to tools
-        Note: An abstract tool has: name, description, input, output,
+        Parameters:
+            tool_grouping: A dictionary mapping a provider (e.g., "Microsoft") to a set of RegisteredTool objects.
+                        Each RegisteredTool represents a concrete LLM application with attributes such as name,
+                        description, function, and provider.
+            abstract_tool: A dictionary representing an abstract tool. This should include keys such as 'name',
+                        'description', 'input', and 'output'. The matching is done based on the tool's name and description.
         
-        return:
-            A mapping of the group to its matched tool(s), in order from most to least simaliar
-            In this current implementation, it will usually be only one tool that gets matched
+        Returns:
+            A dictionary mapping each provider group (string) to a list of matched RegisteredTool objects.
+            The list is expected to be ordered from the most to the least similar tool. In the current implementation,
+            it will usually be only one tool that gets matched.
         """
+    
         if "description" not in abstract_tool:
             raise ValueError("Abstract Tool has no description")
         
-        # NOTE: Lift to orchestrator later
         embeddings = OpenAIEmbeddings()
-    
+        
         if self.debug and "name" in abstract_tool:
             print("\n-------------------------")
             print("Matching: " + abstract_tool["name"])
             print("-------------------------\n")
-
-        matches: dict[str, list[RegisteredTool]] = {}
         
-        # NOTE: We need to implement a different type of selection for 'Unaffiliated'
+        matches: dict[str, list[RegisteredTool]] = {}
+    
+        # NOTE: A special handling for 'Unaffiliated' providers is mentioned but not yet implemented.
         for group in tool_grouping:
             names: dict = {}
-            
             for tool in tool_grouping[group]:
                 names[tool.get_name()] = tool
             
             docs = []
-            tool_index_mapping = { tool: idx for idx, tool in enumerate(tool_grouping[group]) }
+
+            tool_index_mapping = {tool: idx for idx, tool in enumerate(tool_grouping[group])}
             
             for tool in tool_grouping[group]:
                 index = tool_index_mapping.get(tool)
-                docs.append(Document(page_content=(tool.get_name() + ": " + tool.get_description()), metadata={"index": index}))
+                docs.append(
+                    Document(
+                        page_content=(tool.get_name() + ": " + tool.get_description()),
+                        metadata={"index": index}
+                    )
+                )
             
             faiss_store = FAISS.from_documents(docs, embeddings)
             
-            retrieved_docs_with_scores = faiss_store.similarity_search_with_score(abstract_tool["name"] + ": " + abstract_tool["description"])
+            retrieved_docs_with_scores = faiss_store.similarity_search_with_score(
+                abstract_tool["name"] + ": " + abstract_tool["description"]
+            )
             
             if self.debug:
                 print(f"Results for {group}:")
-                
+            
             best = float('inf')
             for doc, score in retrieved_docs_with_scores:
                 tool = list(tool_index_mapping.keys())[doc.metadata['index']]
                 best = min(score, best)
                 if self.debug:
                     print(f"Tool: {tool.get_name()}, Similarity Score: {score:.4f}")
-
-            chosen_tools = list(filter(lambda item: len(item) > 1 and item[1] < 0.4 and abs(item[1] - best) < 0.03, retrieved_docs_with_scores))
+            
+            chosen_tools = list(filter(
+                lambda item: len(item) > 1 and item[1] < 0.35 and abs(item[1] - best) < 0.03,
+                retrieved_docs_with_scores
+            ))
+            
             if self.debug:
                 if not chosen_tools:
                     print("No tools chosen.")
@@ -157,10 +175,13 @@ class ConcretePlanner():
                 else:
                     print(f"Chosen tools: {chosen_tools}")
                 print("\n")
+
             for pair in chosen_tools:
-                matches[group] = matches.get(group, []) + [names[pair[0].page_content.split(":")[0]]]
+                tool_name = pair[0].page_content.split(":")[0]
+                matches[group] = matches.get(group, []) + [names[tool_name]]
+        
         return matches
-                    
+
     
     def __match_func(self, code: str, matches: dict[str, dict[str, list[RegisteredTool]]], group) -> str:
         """
@@ -169,7 +190,6 @@ class ConcretePlanner():
         Returns:
             The code with concrete functions in place of abstract
         """
-        print("MATCH FUNC")
         def find_keyword(text: str, keywords: set[str]) -> str | None:
             """
             Searches for keywords in the given text.

@@ -7,6 +7,7 @@ def run_interface(debug: bool):
     # add_food_delivery_suite(orchestrator)
     # add_workspace_utility_suite(orchestrator)
     add_workspace_utility_suite(orchestrator)
+    add_food_delivery_suite(orchestrator)
     if debug:
         print("Running in Debug Mode... \n")
     else:
@@ -15,6 +16,12 @@ def run_interface(debug: bool):
     model_name: str = model.model_name
     print("Using " + model_name + "... \n")
     print("Message " + model_name + " (Type :q to exit):")
+    set_prompt = """
+    I would like to summarize the document named "Findings", the graph named "Analysis", and the slideshow "Results" and send the summaries to johndoe@northeastern.edu
+    """
+    orchestrator.run_query(set_prompt)
+    return
+
     while True:
         # Use this as a prompt: 
         # I would like to buy some donuts and deliver them to my house
@@ -23,6 +30,3 @@ def run_interface(debug: bool):
             break
         print(orchestrator.run_query(prompt))
         
-"""
-I would like to summarize the document named "Findings", the graph named "Analysis", and the slideshow "Results" and send the summaries to johndoe@northeastern.edu
-"""

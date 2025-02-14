@@ -69,6 +69,7 @@ class RegisteredTool():
             
     def output_str(self) -> str:
         """
+        Returns strings rep of output
         """
         if not self.output:
             return ""
@@ -78,3 +79,13 @@ class RegisteredTool():
         except Exception as e:
             print("Error:", e)
         return result
+    
+    def get_clearance_level(self) -> int:
+        """
+        Returns the clearence level of the tool
+        """
+        try:
+            return self.clearence.value
+        except Exception as e:
+            print("Error Occured:", e)
+            return 0

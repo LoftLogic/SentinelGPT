@@ -75,16 +75,14 @@ class Orchestrator:
         - A final output for the user
 
         Steps:
-        - First, synthesizes the output rules
-        - Second, choosing which tools should be selected, then grouping them by provider.
-        - Third, an sequential execution plan involving tools is created
-        - Fourth, the plan is executed and its outputs are gathered
-        - Fifth, the outputs are conformed to the correct type
-        - Sixth, the conformed outputs are synthesized and shown to the user
+        - An sequential execution plan involving tools is created
+        - The plan is executed and its outputs are gathered
+        - The outputs are conformed to the correct type
+        - The conformed outputs are synthesized and shown to the user
         """
         if self.debug:
             print(f"Running {query}...")
-        grouping: dict[str, set[str]] = self.__selection_step(query)
+        # grouping: dict[str, set[str]] = self.__selection_step(query)
 
         # If not apps are expected to be used
         """
@@ -93,7 +91,7 @@ class Orchestrator:
             response = self.llm.invoke(messages)
             return response.content
         """
-        self.__planning_step(query, grouping)
+        self.__planning_step(query)
 
     def __selection_step(self, query: str) -> dict[str, set[str]]:
         """
@@ -137,7 +135,7 @@ class Orchestrator:
         """
         return grouping
 
-    def __planning_step(self, query: str, grouping: dict[str, set[RegisteredTool]]):
+    def __planning_step(self, query: str):
         """
         Performs the planning step (step 3). Plans the tools accordingly to their group.
 
@@ -167,7 +165,7 @@ class Orchestrator:
                 print(abstract_tools)
         plan = self.tool_blind_planner.generate_abstract_plan(query, abstract_tools)
         code = parse_text_to_python(plan)
-        self.concrete_planner.adapt_plan(grouping, abstract_tools['apps'], code)        
+        self.concrete_planner.adapt_plan(self.tools, abstract_tools['apps'], code)        
         return plan
 
     def __execute_plan(self, plan: dict):

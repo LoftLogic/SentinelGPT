@@ -1,0 +1,228 @@
+Running Sentinel... 
+Gmail added to Google Drive
+Docs added to Google Drive
+Sheets added to Google Drive
+Slides added to Google Drive
+Outlook added to Microsoft Office
+Word added to Microsoft Office
+Excel added to Microsoft Office
+Powerpoint added to Microsoft Office
+MyDonutDelivery added to Unaffiliated
+Pastry Shopper added to PastryEmpire
+MyDonutDelivery added to Unaffiliated
+Restuarant Booker added to Unaffiliated
+Running in Debug Mode... 
+
+Using gpt-4o... 
+
+Message gpt-4o (Type :q to exit):
+Running 
+    I would like to summarize the document named "Findings", the graph named "Analysis", and the slideshow "Results" and send the summaries to johndoe@northeastern.edu
+    ...
+Generating a plan of execution... 
+
+
+Abstract tool signatures:
+
+Tool 1
+Name: Document Summarizer
+Description: A tool that summarizes the content of a document
+Inputs: {'Document Name': {'type': 'str', 'description': 'The name of the document to summarize'}}
+Output: str- A summary of the document
+
+
+
+Tool 2
+Name: Graph Summarizer
+Description: A tool that summarizes the content of a graph
+Inputs: {'Graph Name': {'type': 'str', 'description': 'The name of the graph to summarize'}}
+Output: str- A summary of the graph
+
+
+
+Tool 3
+Name: Slideshow Summarizer
+Description: A tool that summarizes the content of a slideshow
+Inputs: {'Slideshow Name': {'type': 'str', 'description': 'The name of the slideshow to summarize'}}
+Output: str- A summary of the slideshow
+
+
+
+Tool 4
+Name: Email Sender
+Description: A tool that sends an email with the provided content
+Inputs: {'Email Address': {'type': 'str', 'description': 'The email address to send the content to'}, 'Content': {'type': 'str', 'description': 'The content to be sent in the email'}}
+Output: str- A confirmation of the email being sent
+
+
+
+stripped code, pre-AST:
+ def main():
+    document_summary: str = DocumentSummarizer("Findings")
+    graph_summary: str = GraphSummarizer("Analysis")
+    slideshow_summary: str = SlideshowSummarizer("Results")
+    
+    combined_summary: str = f"Document Summary:\n{document_summary}\n\nGraph Summary:\n{graph_summary}\n\nSlideshow Summary:\n{slideshow_summary}"
+    
+    confirmation: str = EmailSender("johndoe@northeastern.edu", combined_summary)
+    return confirmation
+-------------------
+MATCHING TOOL
+----------------------
+
+Abstract Tool: {'name': 'Document Summarizer', 'description': 'A tool that summarizes the content of a document', 'inputs': {'Document Name': {'type': 'str', 'description': 'The name of the document to summarize'}}, 'output': {'type': 'str', 'description': 'A summary of the document'}}
+
+-------------------------
+Matching: Document Summarizer
+-------------------------
+
+Tool: Word, Similarity Score: 0.4245
+Tool: Docs, Similarity Score: 0.4294
+Tool: Powerpoint, Similarity Score: 0.4973
+Tool: Slides, Similarity Score: 0.5137
+-----------DOC SCORES-------:
+
+[(Document(id='34ec75d4-9aa8-4591-afb3-ae96d3770707', metadata={}, page_content='Word: Word allows users to use AI to read and summarize their documents in Microsoft Word'), 0.42448583), (Document(id='80060247-8261-4a82-8944-8cded642ecf1', metadata={}, page_content='Docs: Docs allows users to use AI to read and summarize their documents in Google Drive'), 0.42942372), (Document(id='1660f689-351e-4819-bbac-5e414fd04d9a', metadata={}, page_content='Powerpoint: Powerpoint allows users to use AI to read and summarize their slideshows in Microsoft Powerpoint'), 0.49727485), (Document(id='cef94a34-bd39-4487-9db0-eb1dfd0eabee', metadata={}, page_content='Slides: Slides allows users to use AI to read and summarize their slideshows from Google Slides'), 0.5137131)]
+Chosen tool: (Document(id='34ec75d4-9aa8-4591-afb3-ae96d3770707', metadata={}, page_content='Word: Word allows users to use AI to read and summarize their documents in Microsoft Word'), 0.42448583)
+
+
+-------------------
+MATCHING TOOL
+----------------------
+
+Abstract Tool: {'name': 'Graph Summarizer', 'description': 'A tool that summarizes the content of a graph', 'inputs': {'Graph Name': {'type': 'str', 'description': 'The name of the graph to summarize'}}, 'output': {'type': 'str', 'description': 'A summary of the graph'}}
+
+-------------------------
+Matching: Graph Summarizer
+-------------------------
+
+Tool: Sheets, Similarity Score: 0.4677
+Tool: Excel, Similarity Score: 0.4926
+Tool: Powerpoint, Similarity Score: 0.5404
+Tool: Slides, Similarity Score: 0.5510
+-----------DOC SCORES-------:
+
+[(Document(id='9d8eb584-6deb-4d1b-8349-e15d62f553b0', metadata={}, page_content='Sheets: Sheets allows users to use AI to read and summarize their graphs from Google Sheets'), 0.4677488), (Document(id='e3546fc2-b243-4489-a47d-5ee4c71a4cdb', metadata={}, page_content='Excel: Excel allows users to use AI to read and summarize their graphs in Microsoft Excel'), 0.4925882), (Document(id='abc22002-6507-4c2b-96de-0d933fa2d923', metadata={}, page_content='Powerpoint: Powerpoint allows users to use AI to read and summarize their slideshows in Microsoft Powerpoint'), 0.5403895), (Document(id='5f709b2a-857a-4857-87d7-89239ed6af71', metadata={}, page_content='Slides: Slides allows users to use AI to read and summarize their slideshows from Google Slides'), 0.55102676)]
+Chosen tool: (Document(id='9d8eb584-6deb-4d1b-8349-e15d62f553b0', metadata={}, page_content='Sheets: Sheets allows users to use AI to read and summarize their graphs from Google Sheets'), 0.4677488)
+
+
+-------------------
+MATCHING TOOL
+----------------------
+
+Abstract Tool: {'name': 'Slideshow Summarizer', 'description': 'A tool that summarizes the content of a slideshow', 'inputs': {'Slideshow Name': {'type': 'str', 'description': 'The name of the slideshow to summarize'}}, 'output': {'type': 'str', 'description': 'A summary of the slideshow'}}
+
+-------------------------
+Matching: Slideshow Summarizer
+-------------------------
+
+Tool: Slides, Similarity Score: 0.4028
+Tool: Powerpoint, Similarity Score: 0.4403
+Tool: Sheets, Similarity Score: 0.5407
+Tool: Word, Similarity Score: 0.5441
+-----------DOC SCORES-------:
+
+[(Document(id='3b89e50c-73ab-444b-995c-134033ab6f81', metadata={}, page_content='Slides: Slides allows users to use AI to read and summarize their slideshows from Google Slides'), 0.4027784), (Document(id='4ced7163-f679-4fa3-b04f-740d482b4b6f', metadata={}, page_content='Powerpoint: Powerpoint allows users to use AI to read and summarize their slideshows in Microsoft Powerpoint'), 0.44028872), (Document(id='e32985d9-45be-4ac2-8e33-5f2614392e61', metadata={}, page_content='Sheets: Sheets allows users to use AI to read and summarize their graphs from Google Sheets'), 0.5407121), (Document(id='a4c2c833-0f08-42e8-aa7b-71ffd6176601', metadata={}, page_content='Word: Word allows users to use AI to read and summarize their documents in Microsoft Word'), 0.54411)]
+Chosen tool: (Document(id='3b89e50c-73ab-444b-995c-134033ab6f81', metadata={}, page_content='Slides: Slides allows users to use AI to read and summarize their slideshows from Google Slides'), 0.4027784)
+
+
+-------------------
+MATCHING TOOL
+----------------------
+
+Abstract Tool: {'name': 'Email Sender', 'description': 'A tool that sends an email with the provided content', 'inputs': {'Email Address': {'type': 'str', 'description': 'The email address to send the content to'}, 'Content': {'type': 'str', 'description': 'The content to be sent in the email'}}, 'output': {'type': 'str', 'description': 'A confirmation of the email being sent'}}
+
+-------------------------
+Matching: Email Sender
+-------------------------
+
+Tool: Outlook, Similarity Score: 0.5050
+Tool: Gmail, Similarity Score: 0.5275
+Tool: MyDonutDelivery, Similarity Score: 0.6660
+Tool: Slides, Similarity Score: 0.6783
+-----------DOC SCORES-------:
+
+[(Document(id='bb6a68b4-c8c5-471b-9b23-0fb794fb96ab', metadata={}, page_content='Outlook: Outlook allows users to send emails through Outlook Email'), 0.50498354), (Document(id='4b07323b-473a-4145-b0ea-c9222ec849ec', metadata={}, page_content='Gmail: Gmail allows users to send emails through google mail'), 0.5274992), (Document(id='cf2839c8-1c62-4da3-9f05-8c0bd61dcdc3', metadata={}, page_content='MyDonutDelivery: MyDonutDelivery allows users to buy donuts online and have them delivered to their house'), 0.66599035), (Document(id='129e56a0-50ab-485a-acd4-58384ab775b0', metadata={}, page_content='Slides: Slides allows users to use AI to read and summarize their slideshows from Google Slides'), 0.67833555)]
+Chosen tool: (Document(id='bb6a68b4-c8c5-471b-9b23-0fb794fb96ab', metadata={}, page_content='Outlook: Outlook allows users to send emails through Outlook Email'), 0.50498354)
+
+
+Matched tool for Document Summarizer: Word
+
+
+
+Matched tool for Graph Summarizer: Sheets
+
+
+
+Matched tool for Slideshow Summarizer: Slides
+
+
+
+Matched tool for Email Sender: Outlook
+
+
+
+Code:-----
+ ['def main():', '    document_summary: str = DocumentSummarizer("Findings")', '    graph_summary: str = GraphSummarizer("Analysis")', '    slideshow_summary: str = SlideshowSummarizer("Results")', '    ', '    combined_summary: str = f"Document Summary:\\n{document_summary}\\n\\nGraph Summary:\\n{graph_summary}\\n\\nSlideshow Summary:\\n{slideshow_summary}"', '    ', '    confirmation: str = EmailSender("johndoe@northeastern.edu", combined_summary)', '    return confirmation']
+Used Functions: set()
+Found abs tool
+abs_tool Document Summarizer
+Conc_tool: Word
+Used Functions: set()
+Found abs tool
+abs_tool Graph Summarizer
+Conc_tool: Sheets
+Used Functions: {<function read_word at 0x7fc30b179090>}
+Found abs tool
+abs_tool Slideshow Summarizer
+Conc_tool: Slides
+Used Functions: {<function read_word at 0x7fc30b179090>, <function read_sheet at 0x7fc30b178ee0>}
+Used Functions: {<function read_word at 0x7fc30b179090>, <function read_sheet at 0x7fc30b178ee0>, <function read_slides at 0x7fc30b178f70>}
+Used Functions: {<function read_word at 0x7fc30b179090>, <function read_sheet at 0x7fc30b178ee0>, <function read_slides at 0x7fc30b178f70>}
+Used Functions: {<function read_word at 0x7fc30b179090>, <function read_sheet at 0x7fc30b178ee0>, <function read_slides at 0x7fc30b178f70>}
+Found abs tool
+abs_tool Email Sender
+Conc_tool: Outlook
+Used Functions: {<function read_word at 0x7fc30b179090>, <function read_sheet at 0x7fc30b178ee0>, <function read_slides at 0x7fc30b178f70>}
+Used Functions: {<function send_outlook_email at 0x7fc30b179000>, <function read_word at 0x7fc30b179090>, <function read_sheet at 0x7fc30b178ee0>, <function read_slides at 0x7fc30b178f70>}
+Code: def send_outlook_email(reciever_address: str, email_txt: str):
+    return f"Sent the outlook email to {reciever_address} with content:\n{email_txt}"
+
+def read_slides(slides_name: str):
+    if slides_name == "Results":
+        return "We succesfully decreased 10 percent of robberies with our new outreach program"
+    else:
+        return "Sorry, the slideshow could not be found"
+
+def read_sheet(graph_name: str):
+    if graph_name == "Analysis":
+        return "There was a 10 percent decrease in robberies last year"
+    else:
+        return "Sorry, the graph could not be found"
+
+def read_word(document_name: str):
+    if document_name == "Findings":
+        return "There were 9 robberies in the last year"
+    else:
+        return "Sorry, the document could not be found"
+
+def main():
+    document_summary: str = read_word("Findings")
+    graph_summary: str = read_sheet("Analysis")
+    slideshow_summary: str = read_slides("Results")
+    
+    combined_summary: str = f"Document Summary:\n{document_summary}\n\nGraph Summary:\n{graph_summary}\n\nSlideshow Summary:\n{slideshow_summary}"
+    
+    confirmation: str = send_outlook_email("johndoe@northeastern.edu", combined_summary)
+    return confirmation
+
+RESULTS:
+ Sent the outlook email to johndoe@northeastern.edu with content:
+Document Summary:
+There were 9 robberies in the last year
+
+Graph Summary:
+There was a 10 percent decrease in robberies last year
+
+Slideshow Summary:
+We succesfully decreased 10 percent of robberies with our new outreach program

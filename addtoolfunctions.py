@@ -1,5 +1,6 @@
 from orchestrator import Orchestrator
 from registeredtool import RegisteredTool
+from clearence import Clearence
 
 
 """
@@ -96,7 +97,23 @@ def add_weaker_google_suite(orchestrator: Orchestrator):
     )
     
 def add_healthcare_suite(orchestrator: Orchestrator):
-    """
-    Adds healthcare tools
-    """
-    pass
+    
+    def diagnose_patient(symptoms: list[str]) -> str:
+        if set(symptoms) == {"Coughing", "Chest Pain", "Fever"}:
+            return "Tuberculosis"
+            # return "You have tuberculosis" (NOTE: We should discuss this. What if a tool returns this instead of a one word usable paramter)
+        return "Unknown diagnoses"
+    
+    symptom_diagnoser = RegisteredTool("Symptom Diagnoser", diagnose_patient, 
+        "Allows the user to get a diagnoses based on their current symptom", clearance=Clearence.MODERATE)
+    
+    
+    def get_treatment(diagnosis: str) -> str:
+        if diagnosis == "Tuberculosis":
+            return "Take Rifampin Antibiotics"
+        
+    treatment_generator = RegisteredTool("Treatment Generator", get_treatment,
+        "Allows the user to get a treatment for a given diagnoses", clearance=Clearence.MODERATE)
+    
+    orchestrator.add_tool(symptom_diagnoser).add_tool(treatment_generator)
+    

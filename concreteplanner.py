@@ -64,7 +64,7 @@ class ConcretePlanner():
 
         code = self.__match_func(abs_code, matches)
         if self.debug:
-            print(f"Code: {code}")
+            print(f"Code:\n {code}")
     
         exec_scope = {}
         exec(code, exec_scope)
@@ -94,10 +94,7 @@ class ConcretePlanner():
     
         if "description" not in abstract_tool:
             raise ValueError("Abstract Tool has no description")
-        
-        print("-------------------\nMATCHING TOOL\n----------------------\n")
-        print(f"Abstract Tool: {abstract_tool}")
-        
+                
         embeddings = OpenAIEmbeddings()
         
         if self.debug and "name" in abstract_tool:
@@ -135,15 +132,11 @@ class ConcretePlanner():
             if self.debug:
                 print(f"Tool: {doc.page_content.split(':')[0]}, Similarity Score: {score:.4f}")
                     
-        print("-----------DOC SCORES-------:\n")
-        print(retrieved_docs_with_scores)
         
         chosen_tools = list(filter(
             lambda item: len(item) > 1 and item[1] < 0.6 and abs(item[1] - best) < 0.03,
             retrieved_docs_with_scores
         ))
-        
-        
         
         best_doc: tuple = max(chosen_tools, key = lambda tool: names[tool[0].page_content.split(":")[0]].get_clearance_level())            
             
@@ -187,55 +180,20 @@ class ConcretePlanner():
         code: list[str] = code.splitlines()
         new_code: str = ""
         conc_tool: RegisteredTool = None
-        print("Code:-----\n", code)
         for line in code:
             found: str | None = find_keyword(line, functions)
             if found:
                 abs_tool_name = function_map[found]
-                print("Found abs tool")
-                print("abs_tool", abs_tool_name)
                 if abs_tool_name not in matches:
                     raise ValueError("Abs tool not found in matches")
                 conc_tool = matches[abs_tool_name]
-                print("Conc_tool:", conc_tool.get_name())
+                if self.debug:
+                    print("Concrete tool found:", conc_tool.get_name())
                 new_code += line.replace(found, conc_tool.get_func().__name__) + "\n"
             else:
                 new_code += line + "\n"
-            print("Used Functions:", used_functions)
             
             if conc_tool and conc_tool.get_func() not in used_functions:
                 used_functions.add(conc_tool.get_func())
                 new_code = inspect.getsource(conc_tool.get_func()) + "\n" + new_code
         return new_code
-        
-    def old_match_code(self, tool_grouping: dict[str, set[RegisteredTool]], abstract_tool: dict):
-        """
-        This is the older version of our match code. Does not display the simaliarities after execution. 
-        Not currently used anywhere
-        
-        Matches abstract tools to concrete tools
-        
-        params:
-            tool_grouping- map from provider to tools
-        Note: An abstract tools has: name, description, input, output,
-        
-        return:
-            TBD
-        """
-        if "description" not in abstract_tool:
-            raise ValueError("Abstract Tool has no description")
-        # THRESHOLD: float = 0.80
-        # NOTE: Lift to orchestrator later
-        embeddings = OpenAIEmbeddings()
-        for group in tool_grouping:
-            docs = []
-            tool_index_mapping = { tool: idx for idx, tool in enumerate(tool_grouping[group]) }
-            for tool in tool_grouping[group]:
-                index = tool_index_mapping.get(tool)
-                docs.append(Document(page_content=tool.get_description(), metadata={"index": index}))
-            faiss_store = FAISS.from_documents(docs, embeddings)
-            retrieved_docs = faiss_store.similarity_search(abstract_tool["description"])
-            # Write code that converts the docs list into a list of numerical simaliarity scores between abstract_tool["description"] and the docs
-            print(f"Results for {group}:")
-            for doc in retrieved_docs:
-                print((list(tool_index_mapping.keys())[doc.metadata['index']]).get_name())

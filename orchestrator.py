@@ -9,6 +9,7 @@ from langchain.schema import AIMessage, HumanMessage, SystemMessage
 
 from parsers import *
 
+
 class Orchestrator:
     """
     Represents the central manager of the LLM system.
@@ -22,7 +23,8 @@ class Orchestrator:
         self.concrete_planner: ConcretePlanner = ConcretePlanner(debug)
         self.tool_selector: ToolSelector = ToolSelector()
         self.debug = debug
-        self.llm: ChatOpenAI = ChatOpenAI(model='gpt-4o', temperature=0.0)
+        self.llm: ChatOpenAI = ChatOpenAI(
+            model="Qwen/Qwen2.5-72B-Instruct", temperature=0.0, openai_api_base="http://localhost:8000/v1")
 
     def add_tool(self, tool: RegisteredTool):
         """
@@ -100,21 +102,23 @@ class Orchestrator:
         Returns:
             A mapping of providers to its corresponding set of tool names
         NOTE: This method does not really work that well and is currently not implemented properly
-        """        
+        """
         if self.debug:
             print("Filtering and grouping tools...\n\n")
-        
-        similarities: dict[RegisteredTool, float] = self.tool_selector.get_similarities(query, self.tools)
-        
+
+        similarities: dict[RegisteredTool, float] = self.tool_selector.get_similarities(
+            query, self.tools)
+
         """
         if self.debug:
             print("\nSimilarity scores: \n")
             for tool, score in similarities.items():
                 print(f"{tool.get_name()} has a simaliarity of {score}")
         """
-        
+
         # NOTE: Threshold set to super low for testing purposes
-        tools: set[RegisteredTool] = self.tool_selector.filter_tools(similarities, threshold=0.5)
+        tools: set[RegisteredTool] = self.tool_selector.filter_tools(
+            similarities, threshold=0.5)
 
         """
         if self.debug:
@@ -123,8 +127,9 @@ class Orchestrator:
                 print(tool.get_name())
         """
 
-        grouping: dict[str, set[RegisteredTool]] = self.tool_selector.group_tools(tools)
-        
+        grouping: dict[str, set[RegisteredTool]
+                       ] = self.tool_selector.group_tools(tools)
+
         """        
         if self.debug:
             for provider in grouping:
@@ -146,7 +151,8 @@ class Orchestrator:
             - A sequential plan of execution for the apps
         """
 
-        abstract_tools: dict[list] = self.tool_blind_planner.generate_abstract_tools(query)
+        abstract_tools: dict[list] = self.tool_blind_planner.generate_abstract_tools(
+            query)
         if self.debug:
             print("Generating a plan of execution... \n\n")
             print("Abstract tool signatures:\n")
@@ -158,14 +164,17 @@ class Orchestrator:
                     print(f"Description: {tool['description']}")
                     print(f"Inputs: {tool['inputs']}")
                     if 'output' in tool and 'type' in tool['output'] and 'description' in tool['output']:
-                        print(f"Output: {tool['output']['type']}- {tool['output']['description']}")
+                        print(
+                            f"Output: {tool['output']['type']}- {tool['output']['description']}")
                     print("\n\n")
                     n += 1
             else:
                 print(abstract_tools)
-        plan = self.tool_blind_planner.generate_abstract_plan(query, abstract_tools)
+        plan = self.tool_blind_planner.generate_abstract_plan(
+            query, abstract_tools)
         code = parse_text_to_python(plan)
-        self.concrete_planner.adapt_plan(self.tools, abstract_tools['apps'], code)        
+        self.concrete_planner.adapt_plan(
+            self.tools, abstract_tools['apps'], code)
         return plan
 
     def __execute_plan(self, plan: dict):
@@ -181,7 +190,6 @@ class Orchestrator:
         Fifth Step in the process
         """
         pass
-    
 
     def __finalize(self, conformed_outputs, synthesis_rule) -> str:
         """

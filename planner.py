@@ -9,6 +9,7 @@ from langchain.prompts.chat import (
     HumanMessagePromptTemplate
 )
 
+
 def generate_template() -> ChatPromptTemplate:
     planner_output_format = '''
         {
@@ -38,7 +39,7 @@ def generate_template() -> ChatPromptTemplate:
             ]
         }
         '''
-        
+
     planner_output_empty_format = '''
     {
         "steps": []
@@ -65,17 +66,19 @@ def generate_template() -> ChatPromptTemplate:
         
         You MUST STRICTLY follow the above provided output examples. Only answer with the specified JSON format, no other text')),\  
         """)
-    template_planner_message = [SystemMessagePromptTemplate(prompt=PromptTemplate( \
-    input_variables=['output_format', 'output_format_empty', 'tools'], template= template_str)),\
-    HumanMessagePromptTemplate(prompt=PromptTemplate(input_variables=['input'], template='Query: {input}'))]
+    template_planner_message = [SystemMessagePromptTemplate(prompt=PromptTemplate(
+        input_variables=['output_format', 'output_format_empty', 'tools'], template=template_str)),
+        HumanMessagePromptTemplate(prompt=PromptTemplate(input_variables=['input'], template='Query: {input}'))]
 
     # Set up a prompt template for the hub planner
     template_planner = ChatPromptTemplate(
-        input_variables=['output_format', 'output_format_empty', 'tools', 'input'], 
+        input_variables=['output_format',
+                         'output_format_empty', 'tools', 'input'],
         messages=template_planner_message
     )
-    
-    template_planner = template_planner.partial(output_format=planner_output_format, output_format_empty=planner_output_empty_format)
+
+    template_planner = template_planner.partial(
+        output_format=planner_output_format, output_format_empty=planner_output_empty_format)
     return template_planner
 
 
@@ -85,14 +88,15 @@ class Planner:
     Stores an LLM as its state.
     Has the ability to take in map of selected tools and their provider, and generate an execuction plan accordingly
     """
-    def __init__(self):
-        self.llm: ChatOpenAI = ChatOpenAI(model='gpt-4o', temperature=0.0)
-        self.template: ChatPromptTemplate = generate_template()
-        
-        self.parser = JsonOutputParser()
-        
-        self.llm_chain = self.template | self.llm | self.parser 
 
+    def __init__(self):
+        self.llm: ChatOpenAI = ChatOpenAI(model="Qwen/Qwen2.5-72B-Instruct", temperature=0.0,
+                                          openai_api_base="http://localhost:8000/v1")
+        self.template: ChatPromptTemplate = generate_template()
+
+        self.parser = JsonOutputParser()
+
+        self.llm_chain = self.template | self.llm | self.parser
 
     def generate_plan(self, query, tool_info, chat_history=None) -> dict:
         """

@@ -24,8 +24,10 @@ class AbstractPlanner():
     """
 
     def __init__(self):
-        self.toolgen_llm: ChatOpenAI = ChatOpenAI(model="gpt-4o", temperature=0.0)
-        self.plan_llm: ChatOpenAI = ChatOpenAI(model="gpt-4o", temperature=0.0)
+        self.toolgen_llm: ChatOpenAI = ChatOpenAI(model="Qwen/Qwen2.5-72B-Instruct", temperature=0.0,
+                                                  openai_api_base="http://localhost:8000/v1")
+        self.plan_llm: ChatOpenAI = ChatOpenAI(model="Qwen/Qwen2.5-72B-Instruct", temperature=0.0,
+                                               openai_api_base="http://localhost:8000/v1")
         self.toolgen_template: ChatPromptTemplate = generate_abstract_tool_template()
         self.plangen_template: ChatPromptTemplate = generate_abstract_plan_template()
 

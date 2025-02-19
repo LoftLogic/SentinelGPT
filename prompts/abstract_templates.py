@@ -97,7 +97,7 @@ def generate_abstract_plan_template() -> ChatPromptTemplate:
         {tools}
 
         
-        You MUST STRICTLY follow the above provided output examples. Only answer with the specified Python function in a json format, no other text.
+        You MUST STRICTLY follow the above provided output examples. Only answer with the specified Python function.
     '''
 
     template_planner_message = [SystemMessagePromptTemplate(prompt=PromptTemplate(
@@ -122,14 +122,14 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
             "apps": 
             [
                 {
-                    "name": "Tool name 1",
+                    "name": "ToolNameA",
                     "input": {
                         "query": str
                     },
                     "output": "result_1"
                 },
                 {
-                    "name": "Tool name 2",
+                    "name": "ToolNameB",
                     "input": {
                         "query": str
                     },
@@ -155,8 +155,8 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
             "apps": 
             [
                 {
-                    "name": "Temperature Checker",
-                    "description": "Temperature Checker is a tool that checks for the temperature of the current day at a certain location and time",
+                    "name": "TemperatureChecker",
+                    "description": "TemperatureChecker is a tool that checks for the temperature of the current day at a certain location and time",
                     "inputs": {
                         "Time": {
                             "type": "str",
@@ -186,7 +186,7 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
         "apps": 
         [
             {
-                "name": "Pizza Ordering Tool",
+                "name": "PizzaOrderingTool",
                 "description": "A tool that helps users place pizza orders online for delivery",
                 "inputs": {
                     "Pizza Item": {
@@ -228,7 +228,7 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
         
         Tool format:
         {{
-            "name": "tool_name",
+            "name": "ToolName",
             "description": "A brief description of what the tool does",
             "inputs": {{
                 "parameter_1_name": {{

@@ -8,6 +8,7 @@ import unittest
 import io
 import contextlib
 import multiprocessing
+import math
 
 # Force the "spawn" start method for isolation in subprocesses.
 try:
@@ -45,10 +46,12 @@ class TypeChecker(ast.NodeVisitor):
         arg_types = {}
         for arg in node.args.args:
             if arg.annotation is None:
-                raise TypeError(f"Argument '{arg.arg}' in function '{node.name}' must have a type annotation")
+                raise TypeError(
+                    f"Argument '{arg.arg}' in function '{node.name}' must have a type annotation")
             arg_types[arg.arg] = ast.unparse(arg.annotation)
         if node.returns is None:
-            raise TypeError(f"Function '{node.name}' must have a return type annotation")
+            raise TypeError(
+                f"Function '{node.name}' must have a return type annotation")
         ret_type = ast.unparse(node.returns)
         self.func_sigs[node.name] = (arg_types, ret_type)
 
@@ -65,7 +68,8 @@ class TypeChecker(ast.NodeVisitor):
         declared_type = ast.unparse(node.annotation)
         value_type = self.infer_type(node.value)
         if declared_type != value_type:
-            raise TypeError(f"Type mismatch for variable '{var_name}': declared {declared_type} but got {value_type}")
+            raise TypeError(
+                f"Type mismatch for variable '{var_name}': declared {declared_type} but got {value_type}")
         self.env[var_name] = declared_type
 
     def visit_Assign(self, node):
@@ -73,11 +77,13 @@ class TypeChecker(ast.NodeVisitor):
             raise TypeError("Only simple variable assignments are supported")
         var_name = node.targets[0].id
         if var_name not in self.env:
-            raise TypeError(f"Variable '{var_name}' must be declared before assignment")
+            raise TypeError(
+                f"Variable '{var_name}' must be declared before assignment")
         declared_type = self.env[var_name]
         value_type = self.infer_type(node.value)
         if declared_type != value_type:
-            raise TypeError(f"Type mismatch for variable '{var_name}': declared {declared_type} but got {value_type}")
+            raise TypeError(
+                f"Type mismatch for variable '{var_name}': declared {declared_type} but got {value_type}")
 
     def infer_type(self, node):
         if isinstance(node, ast.Constant):
@@ -88,7 +94,8 @@ class TypeChecker(ast.NodeVisitor):
             elif isinstance(node.value, str):
                 return "str"
             else:
-                raise TypeError(f"Unsupported constant type: {type(node.value)}")
+                raise TypeError(
+                    f"Unsupported constant type: {type(node.value)}")
         elif isinstance(node, ast.BinOp):
             left_type = self.infer_type(node.left)
             right_type = self.infer_type(node.right)
@@ -112,7 +119,8 @@ class TypeChecker(ast.NodeVisitor):
             else:
                 raise TypeError(f"Variable '{node.id}' not declared")
         else:
-            raise TypeError(f"Unsupported expression type: {type(node).__name__}")
+            raise TypeError(
+                f"Unsupported expression type: {type(node).__name__}")
 
 # ====================
 # AST Transformer for Abstract Tool Calls
@@ -187,10 +195,12 @@ def check_type(func, args, kwargs, result):
     for (name, param), arg in zip(sig.parameters.items(), args):
         expected = param.annotation
         if expected is not inspect.Parameter.empty and not isinstance(arg, expected):
-            raise TypeError(f"Argument '{name}' expected type {expected}, got {type(arg)}")
+            raise TypeError(
+                f"Argument '{name}' expected type {expected}, got {type(arg)}")
     expected_ret = sig.return_annotation
     if expected_ret is not inspect.Signature.empty and not isinstance(result, expected_ret):
-        raise TypeError(f"Return value expected type {expected_ret}, got {type(result)}")
+        raise TypeError(
+            f"Return value expected type {expected_ret}, got {type(result)}")
     return result
 
 
@@ -283,6 +293,21 @@ main()
         with self.assertRaises(TypeError):
             code_obj = compile(transformed_tree, filename="<ast>", mode="exec")
             exec(code_obj, env)
+
+    def test_bad_tool_type(self):
+        invalid_script = """
+def foo() -> str:
+    return "hello"
+
+def main() -> None:
+    x : int = foo()
+    print(x)
+main()
+"""
+        tree = ast.parse(invalid_script)
+        checker = TypeChecker()
+        with self.assertRaises(TypeError):
+            checker.visit(tree)
 
     def test_invoke_function_type_enforcement(self):
         with self.assertRaises(TypeError):

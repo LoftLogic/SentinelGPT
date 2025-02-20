@@ -1,26 +1,28 @@
 #!/usr/bin/env python
-import sys
+import os
 import json
 import traceback
 
 
 def main():
     try:
-        if len(sys.argv) != 2:
-            raise ValueError("Expected a single JSON argument.")
-        payload = json.loads(sys.argv[1])
-        tool_code = payload["code"]
+        payload_json = os.environ.get("TOOL_PAYLOAD", "")
+        if not payload_json:
+            raise ValueError("Expected TOOL_PAYLOAD environment variable.")
+        payload = json.loads(payload_json)
+        code = payload["code"]
         function_name = payload["function"]
         args = payload["args"]
         kwargs = payload["kwargs"]
         # Create a fresh namespace.
         namespace = {}
-        # Optionally, pre-populate namespace with allowed constants, e.g., FILE_PATH.
-        namespace["FILE_PATH"] = "/data/file.txt"  # In container, the file is mounted here.
-        # Execute the tool code.
-        exec(tool_code, namespace)
+        # Inject allowed constants.
+        namespace["FILE_PATH"] = "/data/file.txt"
+        # Execute only the provided code.
+        exec(code, namespace)
         if function_name not in namespace:
-            raise ValueError(f"Function {function_name} not defined in provided code.")
+            raise ValueError(
+                f"Function {function_name} not defined in provided code.")
         func = namespace[function_name]
         result = func(*args, **kwargs)
         print(json.dumps({"result": result}))

@@ -1,0 +1,20 @@
+{
+    "arithmetic.py": {
+        "filesystem": false,
+        "network": false
+    },
+    "weather.py": {
+        "filesystem": false,
+        "network": true
+    },
+    "translate.py": {
+        "filesystem": false,
+        "network": true
+    },
+    "file_reader_forbidden.py": {
+        "filesystem": false
+    },
+    "file_reader_allowed.py": {
+        "filesystem": true
+    }
+}

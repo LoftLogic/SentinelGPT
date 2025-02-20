@@ -30,13 +30,12 @@ script = """
 def main():
     x = 10
     y = 20
-    result = tool1(x,
-    
-    tool2(
-    
-    y
-    
-    ))  # This call will be replaced.
+    result = tool1(
+        x,
+        tool2(
+            y
+        )
+    )
     print("Result:", result)
     
 main()

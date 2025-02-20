@@ -114,6 +114,7 @@ def add_healthcare_suite(orchestrator: Orchestrator):
         
     treatment_generator = RegisteredTool("Treatment Generator", get_treatment,
         "Allows the user to get a treatment for a given diagnoses", clearance=Clearence.MODERATE)
-    
+    print(symptom_diagnoser)
+    print(treatment_generator)
     orchestrator.add_tool(symptom_diagnoser).add_tool(treatment_generator)
     

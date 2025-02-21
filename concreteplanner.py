@@ -217,6 +217,6 @@ class ConcretePlanner():
 
             if conc_tool and conc_tool.get_func() not in used_functions:
                 used_functions.add(conc_tool.get_func())
-                new_code = inspect.getsource(
-                    conc_tool.get_func()) + "\n" + new_code
-        return new_code
+                new_code = inspect.getsource(conc_tool.get_func()) + "\n" + new_code
+                
+        return new_code.lstrip()

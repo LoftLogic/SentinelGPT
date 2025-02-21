@@ -89,3 +89,8 @@ class RegisteredTool():
         except Exception as e:
             print("Error Occured:", e)
             return 0
+        
+    def __str__(self) -> str:
+        result = f"{self.get_name()}\n {self.get_description()}"
+        return result
+        

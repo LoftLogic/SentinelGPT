@@ -5,9 +5,9 @@ To be implemented
 """
 
 class Clearence(Enum):
-    LOW = 1,
-    MODERATE = 2,
-    HIGH = 3,
+    LOW = 0,
+    MODERATE = 1,
+    HIGH = 2,
     # To add (?): Share, Read
     
     def description(self) -> str:

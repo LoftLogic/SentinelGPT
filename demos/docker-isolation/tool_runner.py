@@ -25,7 +25,7 @@ def main() -> None:
         if not isinstance(result, int):
             raise TypeError(
                 f"Expected int result, got {result} (type {type(result)})")
-        sys.stdout.write(f"{result}\0")
+        sys.stdout.write(f"{result}")
         sys.stdout.flush()
     except Exception as e:
         print("Error executing tool code:", e, flush=True)

@@ -1,0 +1,14 @@
+# Use a lightweight Python base image
+FROM python:3.9-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy the client script
+COPY client.py /app/client.py
+
+# Expose the server port
+EXPOSE 5000
+
+# Run the client script
+CMD ["python", "/app/client.py"]

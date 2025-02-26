@@ -10,7 +10,6 @@ def write_to_socket(addr: tuple[str, int], message: str) -> None:
         client_socket.connect(addr)
         client_socket.send(message.encode())
         client_socket.close()
-        logger.info(f"Sent {message} to {addr}")
     except Exception as e:
         logger.error(f"Error sending {message} to {addr}: {e}")
     finally:

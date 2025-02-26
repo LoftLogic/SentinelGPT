@@ -6,7 +6,8 @@ from langchain.tools import StructuredTool
 
 class Tool(BaseModel):
     name: str
-    id: str
+    func_name: str
+    # id: str
     description: str
     clearances: set[str]
     provider: str

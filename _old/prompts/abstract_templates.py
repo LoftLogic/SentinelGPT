@@ -112,7 +112,8 @@ def generate_abstract_plan_template() -> ChatPromptTemplate:
         messages=template_planner_message
     )
 
-    template_planner = template_planner.partial(shot_1=shot_1, shot_2=shot_2, shot_3=shot_3)
+    template_planner = template_planner.partial(
+        shot_1=shot_1, shot_2=shot_2, shot_3=shot_3)
     return template_planner
 
 
@@ -276,7 +277,8 @@ def generate_abstract_tool_template() -> ChatPromptTemplate:
 
     # Set up a prompt template for the hub planner
     template_planner = ChatPromptTemplate(
-        input_variables=['output_format', 'output_format_empty', 'shot_1', 'shot_2', 'input'],
+        input_variables=['output_format',
+                         'output_format_empty', 'shot_1', 'shot_2', 'input'],
         messages=template_planner_message
     )
 

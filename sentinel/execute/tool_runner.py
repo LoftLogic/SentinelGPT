@@ -9,11 +9,16 @@ from typing import Any, List
 
 def main() -> None:
     tool_code_b64: str = os.environ.get("TOOL_CODE", "")
+    func_name: str = os.environ.get("FUNC_NAME", "")
     args_json_b64: str = os.environ.get("ARGS", "[]")
+    kwargs_json_b64: str = os.environ.get("KWARGS", "{}")
     tool_code: str = base64.b64decode(tool_code_b64).decode()
     args_json: str = base64.b64decode(args_json_b64).decode()
+    kwargs_json: str = base64.b64decode(kwargs_json_b64).decode()
+
     try:
-        args: dict[str, Any] = json.loads(args_json)
+        args: List[Any] = json.loads(args_json)
+        kwargs: dict[str, Any] = json.loads(kwargs_json)
     except Exception as e:
         print("Error decoding ARGS:", e, flush=True)
         sys.exit(1)
@@ -23,14 +28,18 @@ def main() -> None:
     try:
         local_ns = {}
         exec(tool_code, {}, local_ns)
-        if "main_tool" not in local_ns:
-            print("Tool code must define 'main_tool'.", flush=True)
-            sys.exit(1)
-        result: Any = local_ns["main_tool"](**args)
-        if not isinstance(result, int):
-            raise TypeError(
-                f"Expected int result, got {result} (type {type(result)})")
-        sys.stdout.write(f"{result}")
+        # if "main_tool" not in local_ns:
+        #     print("Tool code must define 'main_tool'.", flush=True)
+        #     sys.exit(1)
+        # result: Any = local_ns["main_tool"](*args, **kwargs)
+        result: Any = local_ns[func_name](*args, **kwargs)
+        # if not isinstance(result, int):
+        #     raise TypeError(
+        #         f"Expected int result, got {result} (type {type(result)})")
+        result_b64: str = base64.b64encode(
+            json.dumps(result).encode()
+        ).decode()
+        sys.stdout.write(result_b64)
         sys.stdout.flush()
     except Exception as e:
         print("Error executing tool code:", e, flush=True)

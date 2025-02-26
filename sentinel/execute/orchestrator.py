@@ -45,11 +45,11 @@ class PlanOrchestrator:
     def join(self) -> None:
         self.listener_thread.join()
 
-    def handle_invoke(self, tool_name: str, tool_args: dict) -> None:
+    def handle_invoke(self, tool_name: str, tool_args: list, tool_kwargs: dict) -> None:
         # Execute tool and retrieve result
         tool = self.tools[tool_name]
         self.tool_execution_sandbox = ToolExecutionSandbox(tool)
-        self.tool_execution_sandbox.launch(inputs=tool_args)
+        self.tool_execution_sandbox.launch(tool_args, tool_kwargs)
         self.tool_execution_sandbox.wait_for_result()
         result = self.tool_execution_sandbox.result
 
@@ -81,8 +81,8 @@ class PlanOrchestrator:
                 if message.startswith("INVOKE:"):
                     msg_b64 = message[len("INVOKE:"):]
                     msg_json = base64.b64decode(msg_b64).decode()
-                    tool_name, tool_args = json.loads(msg_json)
-                    self.handle_invoke(tool_name, tool_args)
+                    tool_name, tool_args, tool_kwargs = json.loads(msg_json)
+                    self.handle_invoke(tool_name, tool_args, tool_kwargs)
                 elif message.startswith("PRINT:"):
                     msg_b64 = message[len("PRINT:"):]
                     msg_str = base64.b64decode(msg_b64).decode()

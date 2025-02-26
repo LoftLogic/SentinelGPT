@@ -13,9 +13,35 @@ from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain.schema import Document
 
+import ast
+import astor
+
 from typing import Callable
 
 import inspect
+
+import sentinel
+
+
+class ToolCallTransformer(ast.NodeTransformer):
+    def __init__(self, tool_functions):
+        self.tool_functions = tool_functions
+
+    def visit_Call(self, node):
+        # First, process the children nodes.
+        self.generic_visit(node)
+        # Check if the function call is a call to one of our tool functions.
+        if isinstance(node.func, ast.Name) and node.func.id in self.tool_functions:
+            # Replace call: tool1(arg1, arg2, ...) with invoke("tool1", arg1, arg2, ...)
+            new_args = [ast.Constant(value=node.func.id)]
+            new_args.extend(node.args)
+            new_node = ast.Call(
+                func=ast.Name(id="invoke", ctx=ast.Load()),
+                args=new_args,
+                keywords=node.keywords
+            )
+            return ast.copy_location(new_node, node)
+        return node
 
 
 """
@@ -58,10 +84,24 @@ class ConcretePlanner():
         Then reformats the abstract plan to use the selected concrete tools
         """
         matches: dict[str, RegisteredTool] = {}
+        new_matches: dict[str, sentinel.schema.tool.Tool] = {}
         for abs_tool in abs_tools:
             # Return value/type of __match_tool() currently unknown
             selected_tool = self.__match_tool(tools, abs_tool)
             matches[abs_tool['name']] = selected_tool
+            print(
+                f"Matched tool for {abs_tool['name']}: args_schema: {selected_tool.tool.args_schema}, output_schema: {selected_tool.tool.output_schema}, source_code: {type(selected_tool.get_function_source())}\n")
+
+            new_matches[abs_tool['name']] = sentinel.schema.Tool(
+                name=selected_tool.get_name(),
+                func_name=selected_tool.get_func().__name__,
+                description=selected_tool.get_description(),
+                clearances={"basic"},
+                provider=selected_tool.provider,
+                args_schema=selected_tool.tool.args_schema,
+                output_schema=selected_tool.tool.output_schema,
+                source_code=selected_tool.get_function_source()
+            )
 
         if self.debug:
             for abs_name in matches:
@@ -69,21 +109,40 @@ class ConcretePlanner():
                     f"Matched tool for {abs_name}: {matches[abs_name].get_name()}\n")
                 print("\n")
 
+        # Parse the script into an AST.
+        tree = ast.parse(abs_code)
+        transformer = ToolCallTransformer(
+            list(map(lambda tool: tool["name"], abs_tools)))
+        new_tree = transformer.visit(tree)
+        ast.fix_missing_locations(new_tree)
+        comp_code = astor.to_source(new_tree)
+        comp_code = comp_code + "\n" + "display(main())"
+
         code = self.__match_func(abs_code, matches)
+        plan = sentinel.schema.Plan(script=comp_code)
         if self.debug:
+            print(f"Abstract Code:\n {abs_code}")
+            print(f"Compiled Code:\n {comp_code}")
             print(f"Code:\n {code}")
 
-        exec_scope = {}
-        exec(code, exec_scope)
-        if "main" in exec_scope:
-            result = exec_scope["main"]()
-            if self.debug:
-                print(f"RESULTS:\n", result)
-        else:
-            if self.debug:
-                print(f"Results NOT FOUND")
-        if self.debug:
-            print("\n")
+        # exec_scope = {}
+        # exec(code, exec_scope)
+        # if "main" in exec_scope:
+        #     result = exec_scope["main"]()
+        #     if self.debug:
+        #         print(f"RESULTS:\n", result)
+        # else:
+        #     if self.debug:
+        #         print(f"Results NOT FOUND")
+        # if self.debug:
+        #     print("\n")
+
+        exec_sandbox = sentinel.execute.PlanOrchestrator(
+            plan=plan,
+            tools=new_matches
+        )
+        exec_sandbox.launch()
+        exec_sandbox.join()
 
     def __match_tool(self, tools: set[RegisteredTool], abstract_tool: dict) -> RegisteredTool:
         """
@@ -217,6 +276,7 @@ class ConcretePlanner():
 
             if conc_tool and conc_tool.get_func() not in used_functions:
                 used_functions.add(conc_tool.get_func())
-                new_code = inspect.getsource(conc_tool.get_func()) + "\n" + new_code
-                
+                new_code = inspect.getsource(
+                    conc_tool.get_func()) + "\n" + new_code
+
         return new_code.lstrip()

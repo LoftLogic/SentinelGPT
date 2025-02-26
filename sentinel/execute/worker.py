@@ -32,9 +32,9 @@ def display(data: str) -> None:
     writer_thread.start()
 
 
-def invoke(tool_name: str, **kwargs: Any) -> Any:
+def invoke(tool_name: str, *args: Any, **kwargs: Any) -> Any:
     # Prepare message
-    msg_json = json.dumps([tool_name, kwargs])
+    msg_json = json.dumps([tool_name, args, kwargs])
     msg_b64 = base64.b64encode(msg_json.encode()).decode()
     message = f"INVOKE: {msg_b64}"
 

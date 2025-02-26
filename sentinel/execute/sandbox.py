@@ -113,18 +113,26 @@ class ToolExecutionSandbox:
         self.tool = tool
         self.has_run = False
 
-    def launch(self, inputs: dict[str, Any]) -> None:
+    def launch(
+        self,
+        args: list[Any] = [],
+        kwargs: dict[str, Any] = {}
+    ) -> None:
         # Enforce input typing
         # TODO: enforce input typing according to tool schema
 
         # Prepare container inputs
         src_code = self.tool.source_code
-        inputs_json = json.dumps(inputs)
+        kwargs_json = json.dumps(kwargs)
+        args_json = json.dumps(args)
         src_code_b64 = base64.b64encode(src_code.encode())
-        inputs_b64 = base64.b64encode(inputs_json.encode())
+        args_b64 = base64.b64encode(args_json.encode())
+        kwargs_b64 = base64.b64encode(kwargs_json.encode())
         docker_env = {
             "TOOL_CODE": src_code_b64,
-            "ARGS": inputs_b64
+            "ARGS": args_b64,
+            "KWARGS": kwargs_b64,
+            "FUNC_NAME": self.tool.func_name
         }
 
         # Spawn tool environment
@@ -162,5 +170,6 @@ class ToolExecutionSandbox:
         # TODO: conform output to tool output schema
         if not self.container:
             raise RuntimeError("Container not launched")
-        output = self.container.logs().decode()
+        output_b64 = self.container.logs().decode()
+        output = json.loads(base64.b64decode(output_b64).decode())
         return output

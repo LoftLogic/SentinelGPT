@@ -10,7 +10,7 @@ import select
 from typing import Any, Tuple
 import socket
 
-listener_ip = "127.0.0.1"
+listener_ip = "0.0.0.0"
 listener_port = 65432
 
 clients = []
@@ -33,12 +33,15 @@ tool_codes = {
 
 docker_client = docker.from_env()
 
-#need to edit
+# need to edit
+
+
 def handle_invoke(message: str, addr) -> None:
     # print(f"[Orchestrator] Received INVOKE message: '{message}'")
     m = re.match(r"INVOKE:\s+(\S+)\s+(.*)", message)
     if not m:
-        writer_thread = threading.Thread(target=handle_write, args=(addr, "RESPONSE: ERROR: Malformed INVOKE."),daemon=True)
+        writer_thread = threading.Thread(target=handle_write, args=(
+            addr, "RESPONSE: ERROR: Malformed INVOKE."), daemon=True)
         writer_thread.start()
         return
     tool = m.group(1)
@@ -48,12 +51,14 @@ def handle_invoke(message: str, addr) -> None:
         if not isinstance(args, tuple):
             args = (args,)
     except Exception as e:
-        writer_thread = threading.Thread(target=handle_write, args=(addr, f"RESPONSE: ERROR: Couldn't parse arguments: {args_str}"),daemon=True)
+        writer_thread = threading.Thread(target=handle_write, args=(
+            addr, f"RESPONSE: ERROR: Couldn't parse arguments: {args_str}"), daemon=True)
         writer_thread.start()
         return
     print(f"[Orchestrator] Invoking tool '{tool}' with args {args}")
     if tool not in tool_codes:
-        writer_thread = threading.Thread(target=handle_write, args=(addr, "RESPONSE: ERROR: Unknown tool"),daemon=True)
+        writer_thread = threading.Thread(target=handle_write, args=(
+            addr, "RESPONSE: ERROR: Unknown tool"), daemon=True)
         writer_thread.start()
         return
     code = tool_codes[tool]
@@ -79,7 +84,8 @@ def handle_invoke(message: str, addr) -> None:
         print(f"[Orchestrator] Error invoking tool '{tool}': {e}")
     value_assigned.wait()
     global worker_port
-    writer_thread = threading.Thread(target=handle_write, args=(('127.0.0.1', worker_port), response),daemon=True)
+    writer_thread = threading.Thread(target=handle_write, args=(
+        ('127.0.0.1', worker_port), response), daemon=True)
     writer_thread.start()
 
 
@@ -92,7 +98,8 @@ def start_listener():
 
     while True:
         client_socket, addr = server.accept()
-        threading.Thread(target=handle_client, args=(client_socket, addr), daemon=True).start()
+        threading.Thread(target=handle_client, args=(
+            client_socket, addr), daemon=True).start()
 
 
 def handle_client(client_socket, address):
@@ -104,7 +111,7 @@ def handle_client(client_socket, address):
             message = client_socket.recv(1024).decode()
             if not message:
                 break
-            #need to send ip of server from workwe..handle that here
+            # need to send ip of server from workwe..handle that here
             if message.startswith("INVOKE:"):
                 handle_invoke(message, address)
             elif message.startswith("PRINT"):
@@ -139,6 +146,7 @@ def handle_write(addr, message):
     finally:
         client_socket.close()  # Close the connection after sending
 
+
 def orchestrator_main() -> None:
 
     listener_thread = threading.Thread(target=start_listener, daemon=True)
@@ -156,10 +164,11 @@ def orchestrator_main() -> None:
         tty=False,         # tty=False for a raw stream.
         stdin_open=True,
         detach=True,
-        #network="bridge",
-        ports={'8080/tcp': None}
+        network_mode="none",
+        ports={'8080/tcp': None},
     )
     time.sleep(1)
+
     container.reload()
     global worker_port
     worker_port = int(container.ports['8080/tcp'][0]["HostPort"])
@@ -168,8 +177,10 @@ def orchestrator_main() -> None:
     global worker_id
     worker_id = container.short_id
     print(container.ports)
+
     listener_thread.join()
     container.wait()
+
 
 if __name__ == "__main__":
     orchestrator_main()

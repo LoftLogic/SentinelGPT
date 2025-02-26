@@ -1,0 +1,17 @@
+import subprocess
+
+def main():
+    x : int = 10
+    y : int = 20
+    # Nested invocation: first call tool2, then tool1.
+    result = invoke('tool1', x, invoke('tool2', y))
+    display(f"Result: {result}")
+
+    result = subprocess.run(["ping", "-c", "4", "google.com"],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True)
+
+    display(f"ping result: {result.stdout}")
+
+main()

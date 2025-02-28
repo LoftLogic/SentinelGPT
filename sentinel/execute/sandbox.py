@@ -8,10 +8,11 @@ import threading
 import base64
 import json
 import logging
+import time
 
 from ..schema.concrete import ConcreteToolBase
 from ..schema.abstract import AbstractPlan
-from .helper import write_to_socket
+from .helper import write_to_socket, safe_container_cleanup
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +28,12 @@ class ExecutionStatus(Enum):
 class PlanExecutionSandbox:
     plan: AbstractPlan
     container: Optional[docker.models.containers.Container]
+    port_ready: threading.Event
 
     def __init__(self, plan: AbstractPlan):
         self.plan = plan
+        self.container = None
+        self.port_ready = threading.Event()
 
     def launch(self) -> None:
         # Prepare container inputs
@@ -48,19 +52,29 @@ class PlanExecutionSandbox:
 
         self.container = container
 
-    def wait_for_port(self) -> None:
-        # TODO: make this more robust
+    def wait_for_port(self, timeout: float = 30.0, interval: float = 0.5) -> None:
         if not self.container:
             raise RuntimeError("Container not launched")
 
-        while not self.container.ports:
+        start_time = time.time()
+        while True:
             self.container.reload()
+            ports = self.container.ports.get("8080/tcp")
+            if ports and ports[0].get("HostPort"):
+                self.port_ready.set()
+                break
             if self.container.status == "exited":
                 raise RuntimeError("Container exited unexpectedly")
+            if time.time() - start_time > timeout:
+                raise TimeoutError("Timed out waiting for container port")
+            time.sleep(interval)
 
-    def send(self, message: str) -> None:
+    def send(self, message: str, timeout: float = 30.0) -> None:
         if not self.container:
             raise RuntimeError("Container not launched")
+
+        if not self.port_ready.wait(timeout=timeout):
+            raise TimeoutError("Timed out waiting for container port")
 
         writer_thread = threading.Thread(
             target=write_to_socket,
@@ -72,10 +86,8 @@ class PlanExecutionSandbox:
         # TODO: think about how to handle errors
         if not self.container:
             raise RuntimeError("Container not launched")
-        try:
-            self.container.kill()
-        except Exception as e:
-            pass
+
+        safe_container_cleanup(self.container)
 
     @property
     def status(self) -> ExecutionStatus:
@@ -106,12 +118,11 @@ class PlanExecutionSandbox:
 
 class ToolExecutionSandbox:
     tool: ConcreteToolBase
-    has_run: bool
     container: Optional[docker.models.containers.Container]
 
     def __init__(self, tool: ConcreteToolBase):
         self.tool = tool
-        self.has_run = False
+        self.container = None
 
     def launch(
         self,
@@ -150,8 +161,9 @@ class ToolExecutionSandbox:
 
     def kill(self) -> None:
         if not self.container:
-            raise RuntimeError("Container not launched")
-        self.container.kill()
+            return
+
+        safe_container_cleanup(self.container)
 
     @property
     def status(self) -> ExecutionStatus:

@@ -144,12 +144,9 @@ class ConcretePlanner():
         # if self.debug:
         #     print("\n")
 
-        exec_sandbox = sentinel.execute.PlanOrchestrator(
-            plan=plan,
-            tools=new_matches
-        )
-        exec_sandbox.launch()
-        exec_sandbox.join()
+        with sentinel.execute.PlanOrchestrator(plan=plan, tools=new_matches) as exec_sandbox:
+            exec_sandbox.launch()
+            exec_sandbox.join()
 
     def __match_tool(self, tools: set[RegisteredTool], abstract_tool: dict) -> RegisteredTool:
         """

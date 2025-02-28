@@ -111,15 +111,15 @@ display("CountRs result: " + str(count_result))
 def main():
     # --- Create the Plan Object ---
     plan = AbstractPlan(script=plan_script, abs_tools=[])
-
-    # --- Initialize the Orchestrator with our Plan and Tools ---
-    orchestrator = PlanOrchestrator(plan, tools={
+    tools = {
         "Multiplier": multiplier_tool,
         "CountRs": count_rs_tool,
-    })
+    }
 
-    orchestrator.launch()
-    orchestrator.join()
+    # --- Initialize the Orchestrator with our Plan and Tools ---
+    with PlanOrchestrator(plan, tools) as orchestrator:
+        orchestrator.launch()
+        orchestrator.join()
 
 
 if __name__ == "__main__":

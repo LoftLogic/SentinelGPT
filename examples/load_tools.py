@@ -56,9 +56,9 @@ def main():
     print(f"Plan script: \n{plan.script}\n")
     print(f"Plan compiled for protocol: \n{plan.compile_for_protocol()}\n")
 
-    orchestrator = PlanOrchestrator(plan=plan, tools=tool_mapping)
-    orchestrator.launch()
-    orchestrator.join()
+    with PlanOrchestrator(plan=plan, tools=tool_mapping) as orchestrator:
+        orchestrator.launch()
+        orchestrator.join()
 
 
 if __name__ == "__main__":

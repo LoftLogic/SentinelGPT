@@ -7,21 +7,21 @@ import logging
 import base64
 
 from .sandbox import PlanExecutionSandbox, ToolExecutionSandbox
-from ..schema.tool import Tool
-from ..schema.plan import Plan
+from ..schema.concrete import ConcreteToolBase
+from ..schema.abstract import AbstractPlan
 
 logger = logging.getLogger(__name__)
 
 
 class PlanOrchestrator:
-    plan: Plan
-    tools: dict[str, Tool]
+    plan: AbstractPlan
+    tools: dict[str, ConcreteToolBase]
     plan_execution_sandbox: Optional[PlanExecutionSandbox]
     tool_execution_sandbox: Optional[ToolExecutionSandbox]
     listener_thread: Optional[threading.Thread]
     shutdown: threading.Event
 
-    def __init__(self, plan: Plan, tools: dict[str, Tool]):
+    def __init__(self, plan: AbstractPlan, tools: dict[str, ConcreteToolBase]):
         self.plan = plan
         self.tools = tools
         self.shutdown = threading.Event()

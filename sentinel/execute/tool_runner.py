@@ -9,7 +9,6 @@ from typing import Any, List
 
 def main() -> None:
     tool_code_b64: str = os.environ.get("TOOL_CODE", "")
-    func_name: str = os.environ.get("FUNC_NAME", "")
     args_json_b64: str = os.environ.get("ARGS", "[]")
     kwargs_json_b64: str = os.environ.get("KWARGS", "{}")
     tool_code: str = base64.b64decode(tool_code_b64).decode()
@@ -32,7 +31,8 @@ def main() -> None:
         #     print("Tool code must define 'main_tool'.", flush=True)
         #     sys.exit(1)
         # result: Any = local_ns["main_tool"](*args, **kwargs)
-        result: Any = local_ns[func_name](*args, **kwargs)
+        # result: Any = local_ns[func_name](*args, **kwargs)
+        result: Any = local_ns["main"](*args, **kwargs)
         # if not isinstance(result, int):
         #     raise TypeError(
         #         f"Expected int result, got {result} (type {type(result)})")

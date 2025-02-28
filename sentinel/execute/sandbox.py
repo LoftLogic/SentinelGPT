@@ -9,8 +9,8 @@ import base64
 import json
 import logging
 
-from ..schema.tool import Tool
-from ..schema.plan import Plan
+from ..schema.concrete import ConcreteToolBase
+from ..schema.abstract import AbstractPlan
 from .helper import write_to_socket
 
 logger = logging.getLogger(__name__)
@@ -25,15 +25,15 @@ class ExecutionStatus(Enum):
 
 
 class PlanExecutionSandbox:
-    plan: Plan
+    plan: AbstractPlan
     container: Optional[docker.models.containers.Container]
 
-    def __init__(self, plan: Plan):
+    def __init__(self, plan: AbstractPlan):
         self.plan = plan
 
     def launch(self) -> None:
         # Prepare container inputs
-        plan_code = self.plan.script
+        plan_code = self.plan.compile_for_protocol()
         plan_code_b64 = base64.b64encode(plan_code.encode())
         docker_env = {"SCRIPT": plan_code_b64}
 
@@ -105,11 +105,11 @@ class PlanExecutionSandbox:
 
 
 class ToolExecutionSandbox:
-    tool: Tool
+    tool: ConcreteToolBase
     has_run: bool
     container: Optional[docker.models.containers.Container]
 
-    def __init__(self, tool: Tool):
+    def __init__(self, tool: ConcreteToolBase):
         self.tool = tool
         self.has_run = False
 
@@ -122,7 +122,7 @@ class ToolExecutionSandbox:
         # TODO: enforce input typing according to tool schema
 
         # Prepare container inputs
-        src_code = self.tool.source_code
+        src_code = self.tool.generate_source()
         kwargs_json = json.dumps(kwargs)
         args_json = json.dumps(args)
         src_code_b64 = base64.b64encode(src_code.encode())
@@ -132,7 +132,6 @@ class ToolExecutionSandbox:
             "TOOL_CODE": src_code_b64,
             "ARGS": args_b64,
             "KWARGS": kwargs_b64,
-            "FUNC_NAME": self.tool.func_name
         }
 
         # Spawn tool environment

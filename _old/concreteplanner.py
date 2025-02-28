@@ -84,7 +84,7 @@ class ConcretePlanner():
         Then reformats the abstract plan to use the selected concrete tools
         """
         matches: dict[str, RegisteredTool] = {}
-        new_matches: dict[str, sentinel.schema.tool.Tool] = {}
+        new_matches: dict[str, sentinel.schema.concrete.Tool] = {}
         for abs_tool in abs_tools:
             # Return value/type of __match_tool() currently unknown
             selected_tool = self.__match_tool(tools, abs_tool)
@@ -92,15 +92,21 @@ class ConcretePlanner():
             print(
                 f"Matched tool for {abs_tool['name']}: args_schema: {selected_tool.tool.args_schema}, output_schema: {selected_tool.tool.output_schema}, source_code: {type(selected_tool.get_function_source())}\n")
 
-            new_matches[abs_tool['name']] = sentinel.schema.Tool(
+            # Replace the function name in the source code
+            sc = selected_tool.get_function_source().replace(
+                selected_tool.get_func().__name__, "main")
+
+            new_matches[abs_tool['name']] = sentinel.schema.CustomTool(
                 name=selected_tool.get_name(),
-                func_name=selected_tool.get_func().__name__,
+                # func_name=selected_tool.get_func().__name__,
                 description=selected_tool.get_description(),
                 clearances={"basic"},
+                permissions=set(),
                 provider=selected_tool.provider,
                 args_schema=selected_tool.tool.args_schema,
                 output_schema=selected_tool.tool.output_schema,
-                source_code=selected_tool.get_function_source()
+                # source_code=selected_tool.get_function_source()
+                source_code=sc,
             )
 
         if self.debug:
@@ -119,7 +125,8 @@ class ConcretePlanner():
         comp_code = comp_code + "\n" + "display(main())"
 
         code = self.__match_func(abs_code, matches)
-        plan = sentinel.schema.Plan(script=comp_code)
+        # cheat with the tools for now, since we hard-code the ast transform
+        plan = sentinel.schema.AbstractPlan(script=comp_code, abs_tools=[])
         if self.debug:
             print(f"Abstract Code:\n {abs_code}")
             print(f"Compiled Code:\n {comp_code}")

@@ -14,8 +14,8 @@ import base64
 import json
 
 from pydantic import BaseModel
-from sentinel.schema.plan import Plan
-from sentinel.schema.tool import Tool
+from sentinel.schema.abstract import AbstractPlan
+from sentinel.schema.concrete import CustomTool
 from sentinel.execute.orchestrator import PlanOrchestrator
 
 # --- Define Real Tool Schemas and Source Code ---
@@ -35,7 +35,7 @@ class MultiplierOutput(BaseModel):
 # Source code for the multiplier tool.
 # It defines a main_tool function that multiplies a and b.
 multiplier_source = (
-    "def main_tool(a : int, b : int):\n"
+    "def main(a : int, b : int):\n"
     "    # Multiply the two numbers\n"
     "    return a * b\n"
 )
@@ -54,29 +54,31 @@ class CountRsOutput(BaseModel):
 # Source code for the CountRs tool.
 # It defines main_tool that returns the number of 'r' or 'R' characters in the text.
 count_rs_source = (
-    "def main_tool(text):\n"
+    "def main(text : str):\n"
     "    # Count 'r' (case-insensitive) in the text\n"
     "    return sum(1 for c in text if c.lower() == 'r')\n"
 )
 
 # --- Create Tool Objects using the Sentinel Schema ---
 
-multiplier_tool = Tool(
+multiplier_tool = CustomTool(
     name="Multiplier",
     id="multiplier_tool",
     description="Multiplies two numbers.",
     clearances={"basic"},
+    permissions=set(),
     provider="demo_provider",
     args_schema=MultiplierArgs,
     output_schema=MultiplierOutput,
     source_code=multiplier_source
 )
 
-count_rs_tool = Tool(
+count_rs_tool = CustomTool(
     name="CountRs",
     id="count_rs_tool",
     description="Counts the number of 'r' characters in a string.",
     clearances={"basic"},
+    permissions=set(),
     provider="demo_provider",
     args_schema=CountRsArgs,
     output_schema=CountRsOutput,
@@ -108,7 +110,7 @@ display("CountRs result: " + str(count_result))
 
 def main():
     # --- Create the Plan Object ---
-    plan = Plan(script=plan_script)
+    plan = AbstractPlan(script=plan_script, abs_tools=[])
 
     # --- Initialize the Orchestrator with our Plan and Tools ---
     orchestrator = PlanOrchestrator(plan, tools={
